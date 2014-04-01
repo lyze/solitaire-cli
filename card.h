@@ -6,6 +6,7 @@
  */
 #pragma once
 #include <iostream>
+#include <list>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -39,6 +40,6 @@ namespace solitaire {
 
   int IntOf(Suit suit);
 
-  typedef std::vector<Card> CardPile;
+  typedef std::list<Card> CardPile;
 
 }

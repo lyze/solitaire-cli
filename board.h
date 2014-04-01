@@ -6,6 +6,7 @@
  */
 #pragma once
 #include <iterator>
+#include <forward_list>
 #include <vector>
 #include "card.h"
 
@@ -16,14 +17,25 @@ namespace solitaire {
   class Board {
   private:
     int numOpenCards;
-    std::vector<Card>::iterator opened;
-    std::vector<Card>::iterator closed;
-    std::vector<Card> deck;
+    std::forward_list<Card>::iterator talon;
+    std::forward_list<Card>::iterator stock; // never points to end unless empty
+    std::forward_list<Card> deck;
     std::vector<CardPile> foundation;
     std::vector<CardPile> tableau;
 
   public:
     Board(int numOpenCards = 3);
+
+    bool IsTalonEmpty();
+    bool IsStockEmpty();
+    bool IsDeckEmpty();
+
+    Board& MoveTalonToFoundation(Suit suit);
+
+    // TODO: use internal bitflag state
+    // TODO: override operator void*() const
+    // TODO: override operator!() const
+
   };
 
 }
