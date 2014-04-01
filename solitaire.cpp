@@ -29,7 +29,5 @@ int main (int argc, char* argv[]) {
   // Draw playing field
 
 
-
-
   return 0;
 }

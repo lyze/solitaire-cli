@@ -4,3 +4,4 @@
  * @author Connie Yuan
  * @brief Prototypes of functions relevant to the card game Solitaire.
  */
+#pragma once
