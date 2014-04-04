@@ -5,6 +5,7 @@
  * @brief A Solitaire board
  */
 #include <algorithm>
+#include <iostream>
 #include "board.h"
 
 namespace solitaire {
@@ -73,4 +74,8 @@ namespace solitaire {
 
   }
 
+  void Board::DrawBoard() {
+    //todo
+    cout << "Display board here. \n";
+  }
 }

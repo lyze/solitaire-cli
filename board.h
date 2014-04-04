@@ -25,13 +25,11 @@ namespace solitaire {
 
   public:
     Board(int numOpenCards = 3);
-
     bool IsTalonEmpty();
     bool IsStockEmpty();
     bool IsDeckEmpty();
-
     Board& MoveTalonToFoundation(Suit suit);
-
+    void DrawBoard();
     // TODO: use internal bitflag state
     // TODO: override operator void*() const
     // TODO: override operator!() const
