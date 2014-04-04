@@ -12,16 +12,24 @@ using namespace std;
 using namespace solitaire;
 
 int main (int argc, char* argv[]) {
-  // Display welcome
   int numOpenCards;
-  if (argc == 1) {
-    // Prompt for number of upturned cards
-  } else {
-    if (strcmp(argv[1], "one") == 0) {
+
+  // Display welcome and set up game
+  cout << "Welcome to Solitaire!\n"
+       << "Please enter " << ONE_CARD_GAME << " for a one-card game" 
+       << " or " << THREE_CARD_GAME << " for a three-card game: ";
+  cin >> numOpenCards;
+  
+  while (numOpenCards != ONE_CARD_GAME && numOpenCards != THREE_CARD_GAME) {
+    cout << "Please enter a valid card selection of " << ONE_CARD_GAME 
+	 << " or " << THREE_CARD_GAME << ": ";
+    cin >> numOpenCards;
+  }
+    
+  if (numOpenCards == ONE_CARD_GAME) {
       // todo
-    } else if (strcmp(argv[1], "three") == 0) {
+  } else if (numOpenCards == THREE_CARD_GAME) {
       // todo
-    }
   }
 
   // Init board with numOpenCards
