@@ -15,19 +15,19 @@ using namespace solitaire;
  */
 int SetupGame () {
   int numOpenCards;
-  
+
   // Display welcome and set up game
   cout << "Welcome to Solitaire!\n"
-       << "Please enter " << ONE_CARD_GAME << " for a one-card game" 
+       << "Please enter " << ONE_CARD_GAME << " for a one-card game"
        << " or " << THREE_CARD_GAME << " for a three-card game: ";
   cin >> numOpenCards;
-  
+
   while (numOpenCards != ONE_CARD_GAME && numOpenCards != THREE_CARD_GAME) {
-    cout << "Please enter a valid card selection of " << ONE_CARD_GAME 
+    cout << "Please enter a valid card selection of " << ONE_CARD_GAME
 	 << " or " << THREE_CARD_GAME << ": ";
     cin >> numOpenCards;
   }
-  
+
   return numOpenCards;
 }
 
@@ -38,24 +38,24 @@ bool PerformPlay (int play, Board board) {
   switch (play) {
   case DEAL:
     //todo: deal
-    board.DrawBoard();
+    // board.DrawBoard();
     return true;
   case MOVE:
-    //move
-    board.DrawBoard();
+    // todo: move
+    // board.DrawBoard();
     return true;
   case HINT:
-    //hint
+    // todo:
     return true;
   case RESTART:
-    //restart
+    // todo: restart
     return true;
   default:
     return false;
   }
 }
 
-/* Display playing options and prompt user to enter choice 
+/* Display playing options and prompt user to enter choice
 */
 void GetPlay (Board board) {
   int play = 0;
@@ -83,12 +83,14 @@ int main (int argc, char* argv[]) {
 
   // start the game and display board
   numOpenCards = SetupGame();
-  Board board (numOpenCards);
+  Board board(numOpenCards);
+
+  /*
   board.DrawBoard();
 
   // check moves at beginning to make sure game playable
   gameStatus = GetGameStatus(board);
-  
+
   // play the game
   while (gameStatus == PLAYING) {
     GetPlay(board);
@@ -100,6 +102,7 @@ int main (int argc, char* argv[]) {
   } else if (gameStatus == LOST) {
     //display losing message
   }
+  */
 
   return 0;
 }

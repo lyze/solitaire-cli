@@ -20,26 +20,24 @@ namespace solitaire {
 
   class Card {
   private:
-    Rank rank;
+    Rank rank; // can't be const because copy and assignment constructor
     Suit suit;
 
   public:
     Card(Rank rank, Suit suit);
 
-    Rank GetRank();
-    Suit GetSuit();
+    Rank GetRank() const;
+    Suit GetSuit() const;
 
-    void Print(std::ostream& out = std::cout);
-    bool RankLessThan(Card card);
-    bool SuitDifferentFrom(Card card);
-
-
+    void Print(std::ostream& out = std::cout) const;
+    bool RankLessThan(Card card) const;
+    bool SuitDifferentFrom(Card card) const;
+    bool IsKing() const;
+    bool IsAce() const;
   };
 
   int IntOf(Rank rank);
 
   int IntOf(Suit suit);
-
-  typedef std::list<Card> CardPile;
 
 }

@@ -5,16 +5,63 @@
  * @brief A Solitaire board
  */
 #include <algorithm>
-#include <iostream>
+#include <stdexcept>
+#include <string>
 #include "board.h"
 
 namespace solitaire {
   using namespace std;
 
+  CardPile::CardPile() : pile(list<Card>()) { }
+
+  template <class InputIterator>
+  CardPile::CardPile(InputIterator first, InputIterator last)
+    : pile(list<Card>(first, last)) { }
+
+
+  template <class InputIterator>
+  void CardPile::Insert(list<Card>::const_iterator position,
+                        InputIterator first, InputIterator last) {
+    pile.insert(position, first, last);
+  }
+
+  template <class const_iterator>
+  void CardPile::Erase(const_iterator first, const_iterator last) {
+    pile.erase(first, last);
+  }
+
+  Card& CardPile::Last() {
+    return pile.back();
+  }
+
+  list<Card>::const_iterator CardPile::Begin() const {
+    return pile.begin();
+  }
+
+  list<Card>::const_iterator CardPile::End() const {
+    return pile.end();
+  }
+
+  list<Card>::const_reverse_iterator CardPile::REnd() const {
+    return pile.rend();
+  }
+
+  bool CardPile::Empty() const {
+    return pile.empty();
+  }
+
+  bool TableauPile::AllShown() const {
+    return shown == Begin();
+  }
+
+  Suit SuitPile::GetSuit() const {
+    return suit;
+  }
+
   Board::Board(int numOpenCards)
     : numOpenCards(numOpenCards),
-      foundation(IntOf(Suit::DIAMONDS), CardPile()),
-      tableau(TABLEAU_SIZE, CardPile()) {
+      foundation(IntOf(Suit::DIAMONDS), SuitPile()),
+      tableau(TABLEAU_SIZE, TableauPile()) {
 
     vector<Card> all = {
       Card(Rank::_A, Suit::SPADES), Card(Rank::_2, Suit::SPADES),
@@ -45,37 +92,239 @@ namespace solitaire {
       Card(Rank::_Q, Suit::DIAMONDS), Card(Rank::_K, Suit::DIAMONDS) };
 
     random_shuffle(all.begin(), all.end());
-    deck = forward_list<Card>(all.begin(), all.end());
+    // make the tableau
+    vector<Card>::iterator it = all.begin();
+    for (int i = 0; i < TABLEAU_SIZE; i++) {
+      tableau[i] = TableauPile(it, next(it, i + 1));
+      tableau[i].shown = prev(tableau[i].End());
+      advance(it, i + 1);
+    }
+    // make the stock cards
+    deck = forward_list<Card>(it, all.end());
     stock = deck.begin();
     talon = deck.end();
   }
 
-  bool Board::IsTalonEmpty() {
+  bool Board::TalonEmpty() const {
     return talon == deck.end();
   }
 
-  bool Board::IsStockEmpty() {
+  bool Board::StockEmpty() const {
     return stock == deck.end();
   }
 
-  bool Board::IsDeckEmpty() {
+  bool Board::DeckEmpty() const {
     return deck.begin() == deck.end();
   }
 
-  Board& Board::MoveTalonToFoundation(Suit suit) {
-    if (IsDeckEmpty()) { // deck is empty?
-      return *this;
-    }
+  Board::TurnOverTableauCard::TurnOverTableauCard(TableauPile& pile)
+    : pile(pile) { }
 
-    if (IsTalonEmpty()) { // talon is empty?
-      return *this;
+  bool Board::TurnOverTableauCard::DoAction() {
+    if (pile.Empty() || pile.AllShown()) {
+      return false;
     }
-    return *this;
-
+    pile.shown = prev(pile.shown);
+    return true;
   }
 
-  void Board::DrawBoard() {
-    //todo
-    cout << "Display board here. \n";
+  Board::TurnOverTalon::TurnOverTalon(Board& board) : board(board) { };
+
+  bool Board::TurnOverTalon::DoAction() {
+    if (board.DeckEmpty()) {
+      return false;
+    }
+    board.talon = board.stock;
+    if (board.StockEmpty()) {
+      board.stock = board.deck.begin();
+    }
+    board.stock = next(board.stock, board.numOpenCards);
+    return true;
   }
-}
+
+  /**
+   * Returns true if the first card can be built down under the second card in
+   * the tableau pile; otherwise, returns false.
+   */
+  static inline bool CanBuildDown(Card kingHigh, Card aceLow) {
+    return aceLow.RankLessThan(kingHigh) && kingHigh.SuitDifferentFrom(aceLow);
+  }
+
+  /**
+   * Returns true if the first card can be built up above the second card in the
+   * foundation pile; otherwise, returnse false.
+   */
+  static inline bool CanBuildUp(Card aceLow, Card kingHigh) {
+    return aceLow.RankLessThan(kingHigh) && !aceLow.SuitDifferentFrom(kingHigh);
+  }
+
+  template <class InputIterator, class const_iterator>
+  Board::Move<InputIterator, const_iterator>
+  ::Move(FromLocation fromLocation, CardPile& from, InputIterator begin,
+         InputIterator end, ToLocation toLocation, CardPile& to,
+         const_iterator position)
+    : fromLocation(fromLocation),
+      from(from),
+      toLocation(toLocation),
+      to(to),
+      begin(begin),
+      end(end),
+      position(position) { }
+
+  template <class InputIterator, class const_iterator>
+  bool Board::Move<InputIterator, const_iterator>::DoAction() {
+    switch (fromLocation) {
+    case FromLocation::TABLEAU:
+      if (end != from.End()) {
+        return false;
+      }
+      break;
+    case FromLocation::FOUNDATION:
+      if (next(begin) != end) {
+        return false;
+      }
+      break;
+    case FromLocation::TALON:
+      if (next(begin) != end) {
+        return false;
+      }
+      break;
+    default:
+      string n = static_cast<int>(toLocation);
+      throw logic_error("Move::DoAction: Unknown enum value (" + n + ")");
+    }
+    switch (toLocation) {
+    case ToLocation::TABLEAU:
+      if (!CanBuildDown(*prev(position), *begin)) {
+        return false;
+      }
+      break;
+    case ToLocation::FOUNDATION:
+      if (!CanBuildUp(*prev(position), *begin)) {
+        return false;
+      }
+      break;
+    default:
+      string n = static_cast<int>(toLocation);
+      throw logic_error("Move::DoAction: Unknown enum value (" + n + ")");
+    }
+    to.Insert(position, begin, end);
+    from.Erase(begin, end);
+    return true;
+  }
+
+  template <class InputIterator, class const_iterator>
+  vector<Board::Action> Board::GetValidMoves() {
+    typedef Move<InputIterator, const_iterator> Move;
+    vector<Action> actions;
+
+    // possible moves to the foundation...
+    for (SuitPile& suitPile : foundation) {
+      // ...from the talon
+      if (!TalonEmpty()) {
+        if (suitPile.Empty()
+            && suitPile.GetSuit() == (*talon).GetSuit() && (*talon).IsAce()) {
+          Move move(FromLocation::TALON, deck, talon, next(talon),
+                    ToLocation::FOUNDATION, suitPile, suitPile.End());
+          actions.push_back(move);
+        } else {
+          if (CanBuildUp(suitPile.Last(), *talon)) {
+            Move move(FromLocation::TALON, deck, talon, next(talon),
+                      ToLocation::FOUNDATION, suitPile, suitPile.End());
+            actions.push_back(move);
+          }
+        }
+      }
+      // ...from the tableau
+      for (CardPile& tableauPile : tableau) {
+        if (!tableauPile.Empty()) {
+          if (suitPile.Empty()
+              && suitPile.GetSuit() == tableauPile.Last().GetSuit()
+              && tableauPile.Last().IsAce()) {
+            Move move(FromLocation::TABLEAU, tableauPile, tableauPile.Last(),
+                      tableauPile.End(), ToLocation::FOUNDATION, suitPile,
+                      suitPile.End());
+            actions.push_back(move);
+          } else {
+            if (CanBuildUp(suitPile.Last(), tableauPile.Last())) {
+              Move move(FromLocation::TABLEAU, tableauPile, tableauPile.Last(),
+                        tableauPile.End(), ToLocation::FOUNDATION, suitPile,
+                        suitPile.End());
+              actions.push_back(move);
+            }
+          }
+        }
+      }
+    }
+
+    // FIXME: remove duplicated logic
+
+    // possible moves to the tableau...
+    for (CardPile& tableauPile : tableau) {
+      // ...from the tableau
+      for (CardPile& fromPile : tableau) {
+        if (&tableauPile == &fromPile) {
+          continue;
+        }
+        if (tableauPile.Empty() && fromPile.Last().IsKing()) {
+          Move move(FromLocation::TABLEAU, fromPile, fromPile.Last(),
+                    fromPile.End(), ToLocation::TABLEAU, tableauPile,
+                    tableauPile.End());
+          actions.push_back(move);
+        } else {
+          if (!tableauPile.Empty()
+              && CanBuildDown(tableauPile.Last(), fromPile.Last())) {
+            Move move(FromLocation::TABLEAU, fromPile, fromPile.Last(),
+                      fromPile.End(), ToLocation::TABLEAU, tableauPile,
+                      tableauPile.End());
+            actions.push_back(move);
+          }
+        }
+      }
+
+      // ...from the foundation
+      for (CardPile& suitPile : foundation) {
+        if (suitPile.Empty()) {
+          continue;
+        }
+        if (tableauPile.Empty() && suitPile.Last().IsKing()) {
+          Move move(FromLocation::FOUNDATION, foundation, suitPile.Last(),
+                    suitPile.End(), ToLocation::TABLEAU, tableauPile,
+                    tableauPile.End());
+          actions.push_back(move);
+        } else {
+          if (!tableauPile.Empty()
+              && CanBuildDown(tableauPile.Last(), suitPile.Last())) {
+            Move move(FromLocation::FOUNDATION, foundation, suitPile.Last(),
+                      suitPile.End(), ToLocation::TABLEAU, tableauPile,
+                      tableauPile.End());
+            actions.push_back(move);
+          }
+        }
+      }
+
+      // ...from the talon
+      if (!TalonEmpty()) {
+        if (tableauPile.Empty() && (*talon).IsKing()) {
+          Move move(FromLocation::TALON, deck, talon, next(talon),
+                    ToLocation::TABLEAU, tableauPile, tableauPile.End());
+          actions.push_back(move);
+        } else {
+          if (!tableauPile.Empty()
+              && CanBuildDown(tableauPile.Last(), *talon)) {
+            Move move(FromLocation::TALON, deck, talon, next(talon),
+                      ToLocation::TABLEAU, tableauPile, tableauPile.End());
+            actions.push_back(move);
+          }
+        }
+      }
+    }
+
+    // reveal next talon
+
+
+    // RETURN
+    return actions;
+  }
+
+  }
