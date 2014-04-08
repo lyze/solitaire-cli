@@ -5,6 +5,8 @@
  * @brief A Solitaire board
  */
 #include <algorithm>
+#include <cstdlib>
+#include <ctime>
 #include <stdexcept>
 #include <string>
 #include "board.h"
@@ -91,7 +93,9 @@ namespace solitaire {
       Card(Rank::_10, Suit::DIAMONDS), Card(Rank::_J, Suit::DIAMONDS),
       Card(Rank::_Q, Suit::DIAMONDS), Card(Rank::_K, Suit::DIAMONDS) };
 
-    random_shuffle(all.begin(), all.end());
+    srand(time(nullptr));
+    random_shuffle(all.begin(), all.end(), [](int i) -> int
+                   { return rand() % i; });
     // make the tableau
     vector<Card>::iterator it = all.begin();
     for (int i = 0; i < TABLEAU_SIZE; i++) {
