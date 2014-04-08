@@ -5,6 +5,7 @@
  * @brief Implements solitare (Klondike).
  */
 #include <cstring>
+#include <limits>
 #include "solitaire.h"
 
 using namespace std;
@@ -14,19 +15,21 @@ using namespace solitaire;
    of game (one-card or three-card)
  */
 int SetupGame () {
-  int numOpenCards;
+  int numOpenCards = 0;
 
   // Display welcome and set up game
   cout << "Welcome to Solitaire!\n"
        << "Please enter " << ONE_CARD_GAME << " for a one-card game"
        << " or " << THREE_CARD_GAME << " for a three-card game: ";
-  cin >> numOpenCards;
 
-  while (numOpenCards != ONE_CARD_GAME && numOpenCards != THREE_CARD_GAME) {
-    cout << "Please enter a valid card selection of " << ONE_CARD_GAME
-	 << " or " << THREE_CARD_GAME << ": ";
-    cin >> numOpenCards;
-  }
+  do {
+    if (!(cin >> numOpenCards)) {
+      cin.clear();
+      cin.ignore();
+      cout << "Please enter a valid card selection of " << ONE_CARD_GAME
+           << " or " << THREE_CARD_GAME << ": ";
+    }
+  } while (numOpenCards != ONE_CARD_GAME && numOpenCards != THREE_CARD_GAME);
 
   return numOpenCards;
 }
@@ -84,10 +87,9 @@ int main (int argc, char* argv[]) {
   // start the game and display board
   numOpenCards = SetupGame();
   Board board(numOpenCards);
-
-  /*
+  cout << endl;
   board.DrawBoard();
-
+  /*
   // check moves at beginning to make sure game playable
   gameStatus = GetGameStatus(board);
 

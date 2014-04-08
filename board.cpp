@@ -60,7 +60,7 @@ namespace solitaire {
 
   Board::Board(int numOpenCards)
     : numOpenCards(numOpenCards),
-      foundation(IntOf(Suit::DIAMONDS), SuitPile()),
+      foundation(IntOf(Suit::DIAMONDS) + 1, SuitPile()),
       tableau(TABLEAU_SIZE, TableauPile()) {
 
     vector<Card> all = {
@@ -116,6 +116,67 @@ namespace solitaire {
   bool Board::DeckEmpty() const {
     return deck.begin() == deck.end();
   }
+
+  void Board::DrawBoard() const {
+    if (DeckEmpty()) {
+      cout << "EMPTY ";
+    } else {
+      cout << "STOCK ";
+    }
+    if (TalonEmpty()) {
+      for (int i = 0; i < numOpenCards; i++) {
+        cout << "-- ";
+      }
+    } else {
+      int n = 0;
+      for (forward_list<Card>::iterator it = talon; talon != stock; next(it)) {
+        (*it).Print();
+        n++;
+      }
+      for (/**/; n < numOpenCards; n++) {
+        cout << "--";
+      }
+    }
+
+    cout << "    ";
+
+    for (SuitPile pile : foundation) {
+      if (pile.Empty()) {
+        cout << "-- ";
+      } else {
+        pile.Last().Print();
+      }
+    }
+    cout << endl;
+    int tableauSize = distance(tableau.begin(), tableau.end());
+    vector<list<Card>::const_iterator> piles;
+    for (int i = 0; i < tableauSize; i++) {
+      piles.push_back(tableau[i].Begin());
+    }
+
+    bool isTableauPrintingDone = true;
+    do {
+      isTableauPrintingDone = true;
+      for (int i = 0; i < tableauSize; i++) {
+        list<Card>::const_iterator& cardIt = piles[i];
+        if (cardIt == tableau[i].End()) {
+          cout << "   ";
+        } else {
+          isTableauPrintingDone = false;
+          if (distance(cardIt, tableau[i].shown) > 0) {
+            cout << "--";
+          } else {
+            (*cardIt).Print();
+          }
+          cout << " ";
+          ++cardIt;
+        }
+      }
+      cout << endl;
+    } while (!isTableauPrintingDone);
+    cout << endl;
+  }
+
 
   Board::TurnOverTableauCard::TurnOverTableauCard(TableauPile& pile)
     : pile(pile) { }

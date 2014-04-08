@@ -61,7 +61,6 @@ namespace solitaire {
   class Board {
   private:
     int numOpenCards;
-    struct status;
     std::forward_list<Card>::iterator talon;
     std::forward_list<Card>::iterator stock;
     std::forward_list<Card> deck;
@@ -75,6 +74,8 @@ namespace solitaire {
     bool StockEmpty() const;
     bool DeckEmpty() const;
 
+    void DrawBoard() const;
+
     void MoveTalonToFoundation(Suit suit);
 
     enum class FromLocation { FOUNDATION, TABLEAU, TALON };
@@ -83,6 +84,7 @@ namespace solitaire {
     class Action {
     public:
       virtual bool DoAction() = 0;
+      // TODO: virtual bool Print(ostream& out = cin) = 0;
     };
 
     class TurnOverTableauCard : public Action {
