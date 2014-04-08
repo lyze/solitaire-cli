@@ -107,6 +107,7 @@ namespace solitaire {
     deck = forward_list<Card>(it, all.end());
     stock = deck.begin();
     talon = deck.end();
+    UpdateStatus();
   }
 
   bool Board::TalonEmpty() const {
@@ -119,6 +120,22 @@ namespace solitaire {
 
   bool Board::DeckEmpty() const {
     return deck.begin() == deck.end();
+  }
+
+  Board::operator bool() const {
+    return status != Status::PLAYING;
+  }
+
+  /**
+   * Updates the status of the game board accordingly.
+   */
+  void Board::UpdateStatus() {
+    // TODO
+    // Update status if stuck.
+  }
+
+  Board::Status Board::GetStatus() const {
+    return status;
   }
 
   void Board::DrawBoard() const {
@@ -182,6 +199,23 @@ namespace solitaire {
   }
 
 
+  /**
+   * Returns true if the first card can be built down under the second card in
+   * the tableau pile; otherwise, returns false.
+   */
+  static inline bool CanBuildDown(Card kingHigh, Card aceLow) {
+    return aceLow.RankLessThan(kingHigh) && kingHigh.SuitDifferentFrom(aceLow);
+  }
+
+  /**
+   * Returns true if the first card can be built up above the second card in the
+   * foundation pile; otherwise, returnse false.
+   */
+  static inline bool CanBuildUp(Card aceLow, Card kingHigh) {
+    return aceLow.RankLessThan(kingHigh) && !aceLow.SuitDifferentFrom(kingHigh);
+  }
+
+  /*
   Board::TurnOverTableauCard::TurnOverTableauCard(TableauPile& pile)
     : pile(pile) { }
 
@@ -205,22 +239,6 @@ namespace solitaire {
     }
     board.stock = next(board.stock, board.numOpenCards);
     return true;
-  }
-
-  /**
-   * Returns true if the first card can be built down under the second card in
-   * the tableau pile; otherwise, returns false.
-   */
-  static inline bool CanBuildDown(Card kingHigh, Card aceLow) {
-    return aceLow.RankLessThan(kingHigh) && kingHigh.SuitDifferentFrom(aceLow);
-  }
-
-  /**
-   * Returns true if the first card can be built up above the second card in the
-   * foundation pile; otherwise, returnse false.
-   */
-  static inline bool CanBuildUp(Card aceLow, Card kingHigh) {
-    return aceLow.RankLessThan(kingHigh) && !aceLow.SuitDifferentFrom(kingHigh);
   }
 
   template <class InputIterator, class const_iterator>
@@ -279,7 +297,7 @@ namespace solitaire {
   }
 
   template <class InputIterator, class const_iterator>
-  vector<Board::Action> Board::GetValidMoves() {
+  vector<Board::Action> Board::GetValidActions() {
     typedef Move<InputIterator, const_iterator> Move;
     vector<Action> actions;
 
@@ -386,10 +404,12 @@ namespace solitaire {
     }
 
     // reveal next talon
+    // TODO
 
 
     // RETURN
     return actions;
   }
+  */
 
-  }
+}

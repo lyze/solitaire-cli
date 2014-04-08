@@ -37,20 +37,20 @@ int SetupGame () {
 /* Perform the user selected play. If option is invalid, return
    false. If play performed, return true.
 */
-bool PerformPlay (int play, Board board) {
+bool PerformPlay (Play play, Board board) {
   switch (play) {
-  case DEAL:
+  case Play::DEAL:
     //todo: deal
     // board.DrawBoard();
     return true;
-  case MOVE:
+  case Play::MOVE:
     // todo: move
     // board.DrawBoard();
     return true;
-  case HINT:
+  case Play::HINT:
     // todo:
     return true;
-  case RESTART:
+  case Play::RESTART:
     // todo: restart
     return true;
   default:
@@ -60,7 +60,7 @@ bool PerformPlay (int play, Board board) {
 
 /* Display playing options and prompt user to enter choice
 */
-void GetPlay (Board board) {
+Play GetPlay () {
   int play = 0;
   cout << "Play Options: \n"
        << "(1) Deal new upturned card(s) \n"
@@ -69,42 +69,43 @@ void GetPlay (Board board) {
        << "(4) Restart the game \n \n"
        << "Select a move: ";
   cin >> play;
-  while (!PerformPlay(play, board)) {
-    cout << "Please enter a valid play option: ";
-    cin >> play;
-  }
-}
+  cout << "Please enter a valid play option: ";
+  // todo: error checking for getPlay
 
-status GetGameStatus (Board board) {
-  //todo
-  return PLAYING;
+  // TODO: GetPlay
+  // Move card
+  // - Which stack would you like to move?
+  // - How many cards?
+  // - To where would you like to move the card(s)?
+
+   return Play::RESTART;
 }
 
 int main (int argc, char* argv[]) {
   int numOpenCards;
-  status gameStatus = PLAYING;
 
   // start the game and display board
   numOpenCards = SetupGame();
-  Board board(numOpenCards);
+  Board game(numOpenCards);
   cout << endl;
-  board.DrawBoard();
-  /*
-  // check moves at beginning to make sure game playable
-  gameStatus = GetGameStatus(board);
 
-  // play the game
-  while (gameStatus == PLAYING) {
-    GetPlay(board);
-    gameStatus = GetGameStatus(board);
+  while (game) {
+    game.DrawBoard();
+    while (!PerformPlay(GetPlay(), game)) {
   }
 
-  if (gameStatus == WON) {
+  }
+  Board::Status status = game.GetStatus();
+  // TODO: Edge case: Check if initial game was stuck
+  if (status == Board::Status::WON) {
     //display winning message
-  } else if (gameStatus == LOST) {
+  } else if (status == Board::Status::STUCK) {
     //display losing message
   }
-  */
+
+  // play the game
+
+
 
   return 0;
 }

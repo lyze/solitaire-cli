@@ -59,13 +59,17 @@ namespace solitaire {
   };
 
   class Board {
+  public:
+    enum class Status { STUCK, PLAYING, WON };
   private:
     int numOpenCards;
+    Status status;
     std::forward_list<Card>::iterator talon;
     std::forward_list<Card>::iterator stock;
     std::forward_list<Card> deck;
     std::vector<SuitPile> foundation;
     std::vector<TableauPile> tableau;
+    void UpdateStatus();
 
   public:
     Board(int numOpenCards = 3);
@@ -76,53 +80,14 @@ namespace solitaire {
 
     void DrawBoard() const;
 
-    void MoveTalonToFoundation(Suit suit);
+    class Action;
+
+    template <class InputIterator, class const_iterator>
+      std::vector<Action> GetValidActions();
 
     enum class FromLocation { FOUNDATION, TABLEAU, TALON };
     enum class ToLocation { FOUNDATION, TABLEAU };
-
-    class Action {
-    public:
-      virtual bool DoAction() = 0;
-      // TODO: virtual bool Print(ostream& out = cin) = 0;
-    };
-
-    class TurnOverTableauCard : public Action {
-    private:
-      TableauPile& pile;
-    public:
-      TurnOverTableauCard(TableauPile& pile);
-      bool DoAction();
-    };
-
-    class TurnOverTalon : public Action {
-    private:
-      Board& board;
-    public:
-      TurnOverTalon(Board& board);
-      bool DoAction();
-    };
-
-    template <class InputIterator, class const_iterator>
-      class Move : public Action {
-    private:
-      const FromLocation fromLocation;
-      const CardPile& from;
-      const ToLocation toLocation;
-      const CardPile& to;
-      const InputIterator begin;
-      const InputIterator end;
-      const const_iterator position;
-    public:
-      Move(FromLocation fromLocation, CardPile& from, InputIterator begin,
-           InputIterator end, ToLocation toLocation, CardPile& to,
-           const_iterator position);
-      bool DoAction() = 0;
-    };
-
-    template <class InputIterator, class const_iterator>
-      std::vector<Action> GetValidMoves();
-
+    Status GetStatus() const;
+    operator bool() const;
   };
-
 }
