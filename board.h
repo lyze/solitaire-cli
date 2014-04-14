@@ -13,16 +13,19 @@
 #define TABLEAU_SIZE 7
 
 namespace solitaire {
-
+  // Board class (implemented below)
   class Board;
 
+  // CardPile class to create a pile of cards
   class CardPile {
   private:
     std::list<Card> pile;
   public:
     friend class Board;
+    
     CardPile();
-
+    
+    // CardPile constructor
     template <class InputIterator>
       CardPile(InputIterator first, InputIterator last);
 
@@ -40,6 +43,7 @@ namespace solitaire {
     bool Empty() const;
   };
 
+  // TableauPile class to create one stack on the tableau
   class TableauPile : public CardPile {
     friend class Board;
   private:
@@ -49,6 +53,7 @@ namespace solitaire {
     bool AllShown() const;
   };
 
+  // SuitPile class to create one stack on the foundation
   class SuitPile : public CardPile {
     friend class Board;
   private:
@@ -58,6 +63,7 @@ namespace solitaire {
     Suit GetSuit() const;
   };
 
+  // Board class to simulate the solitaire board
   class Board {
   public:
     enum class Status { STUCK, PLAYING, WON };

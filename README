@@ -3,7 +3,7 @@ Authors: David Xu and Connie Yuan
 Alpha Submission
 
 Run:
-Start program 
+Start program running "make" and then running "solitaire" executable
 
 Alpha Goals:
 1) Cards laid out correctly
@@ -15,3 +15,25 @@ Alpha Goals:
 Implementation:
 Program was started separately but most changes were implemented in
 a pair programming session.
+
+Compilation Error Note:
+Our code currently does not work on eniac, because eniac does not support
+c++ version 4.8. Therefore, it throws errors for some parts of our code
+in board.h.
+
+Organization of solitaire board:
+ _____  _____              _____  _____  _____  _____
+|Stock||Talon|            |     ||     ||     ||     |
+|     ||     |            |     || Foundation ||     |
+|     ||     |            |     ||     ||     ||     |
+ -----  -----              -----  -----  -----  -----
+
+ _____  _____  _____  _____  _____  _____  _____
+|     ||     ||     ||     ||     ||     ||     |
+|     ||     Tableau Piles ||     ||     ||     |
+|     ||     ||     ||     ||     ||     ||     |
+ -----  -----  -----  -----  -----  -----  -----
+
+
+
+
