@@ -1,2 +1,14 @@
 CIS 190 Final Project
 Authors: David Xu and Connie Yuan
+Alpha Submission
+
+Alpha Goals:
+1) Cards laid out correctly
+   - Program successfully displays the board at the beginning of game
+   - Board follows the rules of klondike solitaire 
+2) Receive and act on user commands
+   - Prompts users for 4 commands and read commands
+
+Implementation:
+Program was started separately but most changes were implemented in
+a pair programming session.
