@@ -2,7 +2,7 @@
  * @file solitaire.cpp
  * @author David Xu
  * @author Connie Yuan
- * @brief Implements solitare (Klondike).
+ * @brief Implements solitaire (Klondike).
  */
 #include <cstring>
 #include <limits>
@@ -12,7 +12,8 @@ using namespace std;
 using namespace solitaire;
 
 /* Display the welcome message and prompt user for type
-   of game (one-card or three-card)
+   of game (one-card or three-card). Returns the number of
+   cards to use in the game.
  */
 int SetupGame () {
   int numOpenCards = 0;
@@ -48,7 +49,7 @@ bool PerformPlay (Play play, Board board) {
     // board.DrawBoard();
     return true;
   case Play::HINT:
-    // todo:
+    // todo: hint
     return true;
   case Play::RESTART:
     // todo: restart
@@ -58,18 +59,24 @@ bool PerformPlay (Play play, Board board) {
   }
 }
 
-/* Display playing options and prompt user to enter choice
+/* Display playing options and prompt user to enter choice.
+   Returns the play if valid.
 */
 Play GetPlay () {
   int play = 0;
-  cout << "Play Options: \n"
-       << "(1) Deal new upturned card(s) \n"
-       << "(2) Move card(s) \n"
-       << "(3) Get a hint \n"
-       << "(4) Restart the game \n \n"
+  cout << "Play Options:" << endl
+       << "(1) Deal new upturned card(s)" << endl
+       << "(2) Move card(s)" << endl
+       << "(3) Get a hint" << endl
+       << "(4) Restart the game" << endl << endl
        << "Select a move: ";
   cin >> play;
-  cout << "Please enter a valid play option: ";
+
+  while (play != Play::DEAL || play != Play::MOVE || 
+	 play != Play::HINT || play != Play::RESTART) {
+    cout << "Please enter a valid play option: ";
+    cin >> play;
+  }
   // todo: error checking for getPlay
 
   // TODO: GetPlay
@@ -78,6 +85,13 @@ Play GetPlay () {
   // - How many cards?
   // - To where would you like to move the card(s)?
 
+  if (play == Play::DEAL) {
+    return Play::DEAL;
+  } else if (play == Play::MOVE) {
+    return Play::MOVE;
+  } else if (play == Play::HINT) {
+    return Play::HINT;
+  }
    return Play::RESTART;
 }
 
@@ -89,12 +103,12 @@ int main (int argc, char* argv[]) {
   Board game(numOpenCards);
   cout << endl;
 
+  // while the game still has valid moves or the user wants to continue playing
   while (game) {
     game.DrawBoard();
-    while (!PerformPlay(GetPlay(), game)) {
+    while (!PerformPlay(GetPlay(), game)) { }
   }
 
-  }
   Board::Status status = game.GetStatus();
   // TODO: Edge case: Check if initial game was stuck
   if (status == Board::Status::WON) {
@@ -102,10 +116,6 @@ int main (int argc, char* argv[]) {
   } else if (status == Board::Status::STUCK) {
     //display losing message
   }
-
-  // play the game
-
-
 
   return 0;
 }

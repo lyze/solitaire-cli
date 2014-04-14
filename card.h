@@ -15,15 +15,15 @@
 
 namespace solitaire {
   enum class Rank { _A = 1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _J, _Q, _K };
-
   enum class Suit { SPADES, HEARTS, CLUBS, DIAMONDS };
 
   class Card {
   private:
-    Rank rank; // can't be const because copy and assignment constructor
+    Rank rank;
     Suit suit;
 
   public:
+    // constructs a card
     Card(Rank rank, Suit suit);
 
     Rank GetRank() const;
@@ -37,7 +37,6 @@ namespace solitaire {
   };
 
   int IntOf(Rank rank);
-
   int IntOf(Suit suit);
 
 }

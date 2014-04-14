@@ -12,7 +12,7 @@ const int THREE_CARD_GAME = 3;
 
 /**
  * WON if no moves left and player won, LOST if no moves left and player lost,
- * PLAYING if moves left.
+ * PLAYING if moves left, RESTART if user chooses to restart the game.
  */
 // TODO: enum Play
 enum class Play { DEAL = 1, MOVE = 2, HINT = 3, RESTART = 4 };
