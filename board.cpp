@@ -14,57 +14,71 @@
 namespace solitaire {
   using namespace std;
 
+  // CardPile constructors
   CardPile::CardPile() : pile(list<Card>()) { }
 
+  // CardPile constructor with a pointer to the first card and last car
   template <class InputIterator>
   CardPile::CardPile(InputIterator first, InputIterator last)
     : pile(list<Card>(first, last)) { }
 
-
+  // Inserts the pile that starts at first and ends at last into position
   template <class InputIterator>
   void CardPile::Insert(list<Card>::const_iterator position,
                         InputIterator first, InputIterator last) {
     pile.insert(position, first, last);
   }
 
+  // Erases the pile starting at first and ending at last
   template <class const_iterator>
   void CardPile::Erase(const_iterator first, const_iterator last) {
     pile.erase(first, last);
   }
 
+  // Returns a pointer to the last element of the pile
   Card& CardPile::Last() {
     return pile.back();
   }
 
+  // Returns an iterator that begins at the first element in the pile
   list<Card>::const_iterator CardPile::Begin() const {
     return pile.begin();
   }
 
+  // Returns an iterator that starts at the first position past the pile's end
   list<Card>::const_iterator CardPile::End() const {
     return pile.end();
   }
 
+  // Returns an iterator that begins at the reverse end of the pile
   list<Card>::const_reverse_iterator CardPile::REnd() const {
     return pile.rend();
   }
 
+  // Returns whether a pile is empty
   bool CardPile::Empty() const {
     return pile.empty();
   }
 
+  // Returns whether all the cards in the tableau pile are shown
   bool TableauPile::AllShown() const {
     return shown == Begin();
   }
 
+  // Returns the suit of the pile
   Suit SuitPile::GetSuit() const {
     return suit;
   }
 
+  /* Constructor to create a new board. The number of open 
+     cards (1 or 3) is passed in.
+  */
   Board::Board(int numOpenCards)
     : numOpenCards(numOpenCards),
-      foundation(IntOf(Suit::DIAMONDS) + 1, SuitPile()),
+      foundation(NUM_SUITS + 1, SuitPile()),
       tableau(TABLEAU_SIZE, TableauPile()) {
 
+    // Creates a vector of all the cards in a deck
     vector<Card> all = {
       Card(Rank::_A, Suit::SPADES), Card(Rank::_2, Suit::SPADES),
       Card(Rank::_3, Suit::SPADES), Card(Rank::_4, Suit::SPADES),
@@ -93,9 +107,11 @@ namespace solitaire {
       Card(Rank::_10, Suit::DIAMONDS), Card(Rank::_J, Suit::DIAMONDS),
       Card(Rank::_Q, Suit::DIAMONDS), Card(Rank::_K, Suit::DIAMONDS) };
 
+    // Creates a random shuffle to begin a new game
     srand(time(nullptr));
     random_shuffle(all.begin(), all.end(), [](int i) -> int
                    { return rand() % i; });
+
     // make the tableau
     vector<Card>::iterator it = all.begin();
     for (int i = 0; i < TABLEAU_SIZE; i++) {
@@ -103,6 +119,7 @@ namespace solitaire {
       tableau[i].shown = prev(tableau[i].End());
       advance(it, i + 1);
     }
+
     // make the stock cards
     deck = forward_list<Card>(it, all.end());
     stock = deck.begin();
@@ -110,40 +127,48 @@ namespace solitaire {
     UpdateStatus();
   }
 
+  // Check whether the talon is empty
   bool Board::TalonEmpty() const {
     return talon == deck.end();
   }
 
+  // Check whether the stock is empty
   bool Board::StockEmpty() const {
     return stock == deck.end();
   }
 
+  // Check whether the deck is empty
   bool Board::DeckEmpty() const {
     return deck.begin() == deck.end();
   }
 
+  // Returns true only if the game has not ended
   Board::operator bool() const {
     return status != Status::PLAYING;
   }
 
-  /**
-   * Updates the status of the game board accordingly.
-   */
+  
+  // Updates the status of the game board accordingly.
   void Board::UpdateStatus() {
     // TODO
     // Update status if stuck.
   }
 
+  // Returns the current status of the game
   Board::Status Board::GetStatus() const {
     return status;
   }
 
+  // Draws the board to be displayed through the command line
   void Board::DrawBoard() const {
+    //Display the stock area
     if (DeckEmpty()) {
       cout << "EMPTY ";
     } else {
       cout << "STOCK ";
     }
+
+    // Display the talon area
     if (TalonEmpty()) {
       for (int i = 0; i < numOpenCards; i++) {
         cout << "-- ";
@@ -160,7 +185,8 @@ namespace solitaire {
     }
 
     cout << "    ";
-
+    
+    // Display the foundation area
     for (SuitPile pile : foundation) {
       if (pile.Empty()) {
         cout << "-- ";
@@ -169,6 +195,8 @@ namespace solitaire {
       }
     }
     cout << endl;
+
+    // Display the tableau area
     int tableauSize = distance(tableau.begin(), tableau.end());
     vector<list<Card>::const_iterator> piles;
     for (int i = 0; i < tableauSize; i++) {
@@ -215,6 +243,8 @@ namespace solitaire {
     return aceLow.RankLessThan(kingHigh) && !aceLow.SuitDifferentFrom(kingHigh);
   }
 
+
+  //TODO
   /*
   Board::TurnOverTableauCard::TurnOverTableauCard(TableauPile& pile)
     : pile(pile) { }
