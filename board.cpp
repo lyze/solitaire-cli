@@ -61,11 +61,16 @@ namespace solitaire {
     return suit;
   }
 
-  Board::Board(int numOpenCards)
-    : numOpenCards(numOpenCards),
-      status(Status::PLAYING),
-      foundation(NUM_SUITS + 1, SuitPile()),
-      tableau(TABLEAU_SIZE, TableauPile()) {
+  Board::Board(int numOpenCards) {
+    Reset(numOpenCards);
+  }
+
+  void Board::Reset(int numOpenCards) {
+    this->numOpenCards = numOpenCards;
+    status = Status::PLAYING;
+    stuckState = nullptr;
+    foundation = vector<SuitPile>(NUM_SUITS + 1);
+    tableau = vector<TableauPile>(TABLEAU_SIZE);
 
     // Creates a vector of all the cards in a deck
     vector<Card> all = {
@@ -132,9 +137,20 @@ namespace solitaire {
   }
 
   void Board::UpdateStatus() {
+    // TODO: UpdateStatus()
+    if (ValidMovesInFrame()) { // valid moves exist...
+      stuckState = nullptr;
+      return;
+    }
 
-    // TODO
-    // Update status if stuck.
+    // no valid moves...
+    if (stuckState == nullptr) { // there were moves in prior frames but not now
+      stuckState = &talon;
+    } else {                     // no moves in prior frames through now
+      if (*stuckState == talon) {
+        status = Status::STUCK;
+      }
+    }
   }
 
   Board::Status Board::GetStatus() const {
@@ -149,36 +165,37 @@ namespace solitaire {
   }
 
   template <class iterator>
-  static iterator SafeNext(iterator it, iterator end, size_t delta) {
+  static iterator SafeNext(iterator it, iterator end, size_t delta = 1) {
     SafeAdvance(it, end, delta);
     return it;
   }
 
-  bool Board::PerformPlay(Play play) {
+void Board::PerformPlay(Play play) {
     switch (play) {
     case Play::DRAW:
       DoNewTalon();
-      return true;
+      break;
     case Play::MOVE:
       // todo: move
       // board.DrawBoard();
-      return true;
+      break;
     case Play::HINT:
-      // todo: hint
-      return true;
+      DoGetHint();
+      break;
     case Play::RESTART:
       // todo: restart
-      return true;
+      break;
     default:
-      return false;
+      break;
     }
+
+    UpdateStatus();
   }
 
   void Board::DoNewTalon() {
     if (deck.empty()) {
       return;
     }
-    // TODO: check valid
 
     if (stock == deck.end()) { // reached end of the stock
       talon = deck.end();
@@ -193,6 +210,133 @@ namespace solitaire {
 
   }
 
+
+  void Board::DoGetHint() {
+    cout << endl;
+    if (ValidMovesInFrame()) {
+      cout << "There is a valid move available!";
+    } else {
+      cout << "There are no valid moves in this frame.";
+    }
+    cout << endl << endl;
+  }
+
+
+  void Board::DoMove() {
+    // todo
+  }
+
+
+  Card& Board::GetTalonCard() const {
+    forward_list<Card>::iterator it = talon;
+    auto next = std::next(it);
+    while (next != stock) {
+      ++it;
+      ++next;
+    }
+    return *it;
+  }
+
+
+  /**
+   * Returns true if the first card can be built down under the second card in
+   * the tableau pile; otherwise, returns false.
+   */
+  static inline bool CanBuildDown(Card kingHigh, Card aceLow) {
+    return aceLow.RankLessThan(kingHigh) && kingHigh.SuitDifferentFrom(aceLow);
+  }
+
+
+  /**
+   * Returns true if the first card can be built up above the second card in the
+   * foundation pile; otherwise, returnse false.
+   */
+  static inline bool CanBuildUp(Card aceLow, Card kingHigh) {
+    return aceLow.RankLessThan(kingHigh) && !aceLow.SuitDifferentFrom(kingHigh);
+  }
+
+
+  bool Board::ValidMovesInFrame() const {
+    // possibile moves to the foundation...
+    for (SuitPile suitPile : foundation) {
+      // ...from the tableau
+      for (CardPile tableauPile : tableau) {
+        if (!tableauPile.Empty()) {
+          if (suitPile.Empty()
+              && suitPile.GetSuit() == tableauPile.Last().GetSuit()
+              && tableauPile.Last().IsAce()) {
+            return true;
+          } else {
+            if (CanBuildUp(suitPile.Last(), tableauPile.Last())) {
+              return true;
+            }
+          }
+        }
+
+        // ... from the talon
+        if (!TalonEmpty()) {
+          Card talonCard = GetTalonCard();
+          if (suitPile.Empty()
+              && suitPile.GetSuit() == talonCard.GetSuit()
+              && talonCard.IsAce()) {
+            return true;
+          } else {
+            if (CanBuildUp(suitPile.Last(), talonCard)) {
+              return true;
+            }
+          }
+        }
+
+      }
+    }
+
+    // possible moves to the tableau...
+    for (CardPile tableauPile : tableau) {
+      // ...from the tableau
+      for (CardPile fromPile : tableau) {
+        if (&tableauPile == &fromPile) {
+          continue;
+        }
+        if (tableauPile.Empty() && fromPile.Last().IsKing()) {
+          return true;
+        } else {
+          if (!tableauPile.Empty()
+              && CanBuildDown(tableauPile.Last(), fromPile.Last())) {
+            return true;
+          }
+        }
+      }
+
+      // ...from the foundation
+      for (CardPile suitPile : foundation) {
+        if (suitPile.Empty()) {
+          continue;
+        }
+        if (tableauPile.Empty() && suitPile.Last().IsKing()) {
+          return true;
+        } else {
+          if (!tableauPile.Empty()
+              && CanBuildDown(tableauPile.Last(), suitPile.Last())) {
+            return true;
+          }
+        }
+      }
+
+      // ...from the talon
+      if (!TalonEmpty()) {
+        if (tableauPile.Empty() && (*talon).IsKing()) {
+          return true;
+        } else {
+          if (!tableauPile.Empty()
+              && CanBuildDown(tableauPile.Last(), *talon)) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  }
 
   void Board::DrawBoard() const {
     // Display the stock area
@@ -260,22 +404,6 @@ namespace solitaire {
     cout << endl;
   }
 
-
-  /**
-   * Returns true if the first card can be built down under the second card in
-   * the tableau pile; otherwise, returns false.
-   */
-  static inline bool CanBuildDown(Card kingHigh, Card aceLow) {
-    return aceLow.RankLessThan(kingHigh) && kingHigh.SuitDifferentFrom(aceLow);
-  }
-
-  /**
-   * Returns true if the first card can be built up above the second card in the
-   * foundation pile; otherwise, returnse false.
-   */
-  static inline bool CanBuildUp(Card aceLow, Card kingHigh) {
-    return aceLow.RankLessThan(kingHigh) && !aceLow.SuitDifferentFrom(kingHigh);
-  }
 
 
   //TODO
@@ -366,106 +494,6 @@ namespace solitaire {
     vector<Action> actions;
 
     // possible moves to the foundation...
-    for (SuitPile& suitPile : foundation) {
-      // ...from the talon
-      if (!TalonEmpty()) {
-        if (suitPile.Empty()
-            && suitPile.GetSuit() == (*talon).GetSuit() && (*talon).IsAce()) {
-          Move move(FromLocation::TALON, deck, talon, next(talon),
-                    ToLocation::FOUNDATION, suitPile, suitPile.End());
-          actions.push_back(move);
-        } else {
-          if (CanBuildUp(suitPile.Last(), *talon)) {
-            Move move(FromLocation::TALON, deck, talon, next(talon),
-                      ToLocation::FOUNDATION, suitPile, suitPile.End());
-            actions.push_back(move);
-          }
-        }
-      }
-      // ...from the tableau
-      for (CardPile& tableauPile : tableau) {
-        if (!tableauPile.Empty()) {
-          if (suitPile.Empty()
-              && suitPile.GetSuit() == tableauPile.Last().GetSuit()
-              && tableauPile.Last().IsAce()) {
-            Move move(FromLocation::TABLEAU, tableauPile, tableauPile.Last(),
-                      tableauPile.End(), ToLocation::FOUNDATION, suitPile,
-                      suitPile.End());
-            actions.push_back(move);
-          } else {
-            if (CanBuildUp(suitPile.Last(), tableauPile.Last())) {
-              Move move(FromLocation::TABLEAU, tableauPile, tableauPile.Last(),
-                        tableauPile.End(), ToLocation::FOUNDATION, suitPile,
-                        suitPile.End());
-              actions.push_back(move);
-            }
-          }
-        }
-      }
-    }
-
-    // FIXME: remove duplicated logic
-
-    // possible moves to the tableau...
-    for (CardPile& tableauPile : tableau) {
-      // ...from the tableau
-      for (CardPile& fromPile : tableau) {
-        if (&tableauPile == &fromPile) {
-          continue;
-        }
-        if (tableauPile.Empty() && fromPile.Last().IsKing()) {
-          Move move(FromLocation::TABLEAU, fromPile, fromPile.Last(),
-                    fromPile.End(), ToLocation::TABLEAU, tableauPile,
-                    tableauPile.End());
-          actions.push_back(move);
-        } else {
-          if (!tableauPile.Empty()
-              && CanBuildDown(tableauPile.Last(), fromPile.Last())) {
-            Move move(FromLocation::TABLEAU, fromPile, fromPile.Last(),
-                      fromPile.End(), ToLocation::TABLEAU, tableauPile,
-                      tableauPile.End());
-            actions.push_back(move);
-          }
-        }
-      }
-
-      // ...from the foundation
-      for (CardPile& suitPile : foundation) {
-        if (suitPile.Empty()) {
-          continue;
-        }
-        if (tableauPile.Empty() && suitPile.Last().IsKing()) {
-          Move move(FromLocation::FOUNDATION, foundation, suitPile.Last(),
-                    suitPile.End(), ToLocation::TABLEAU, tableauPile,
-                    tableauPile.End());
-          actions.push_back(move);
-        } else {
-          if (!tableauPile.Empty()
-              && CanBuildDown(tableauPile.Last(), suitPile.Last())) {
-            Move move(FromLocation::FOUNDATION, foundation, suitPile.Last(),
-                      suitPile.End(), ToLocation::TABLEAU, tableauPile,
-                      tableauPile.End());
-            actions.push_back(move);
-          }
-        }
-      }
-
-      // ...from the talon
-      if (!TalonEmpty()) {
-        if (tableauPile.Empty() && (*talon).IsKing()) {
-          Move move(FromLocation::TALON, deck, talon, next(talon),
-                    ToLocation::TABLEAU, tableauPile, tableauPile.End());
-          actions.push_back(move);
-        } else {
-          if (!tableauPile.Empty()
-              && CanBuildDown(tableauPile.Last(), *talon)) {
-            Move move(FromLocation::TALON, deck, talon, next(talon),
-                      ToLocation::TABLEAU, tableauPile, tableauPile.End());
-            actions.push_back(move);
-          }
-        }
-      }
-    }
 
     // reveal next talon
     // TODO

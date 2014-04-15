@@ -83,16 +83,24 @@ int main (int argc, char* argv[]) {
   // while the game still has valid moves or the user wants to continue playing
   while (game) {
     game.DrawBoard();
-    while (!game.PerformPlay(GetPlay())) { }
+    game.PerformPlay(GetPlay());
+    Board::Status status = game.GetStatus();
+    if (status == Board::Status::WON) {
+      //display winning message
+    } else if (status == Board::Status::STUCK) {
+      cout << "You have no more valid moves! Would you like to restart? (y/n) " << endl;
+      // TODO: Get input
+      string s;
+      cin >> s;
+      if (s == "y") {
+        game.Reset(SetupGame());
+      } else {
+        // don't do anything
+      }
+    }
   }
 
-  Board::Status status = game.GetStatus();
-  // TODO: Edge case: Check if initial game was stuck
-  if (status == Board::Status::WON) {
-    //display winning message
-  } else if (status == Board::Status::STUCK) {
-    //display losing message
-  }
+
 
   return 0;
 }

@@ -30,8 +30,8 @@ namespace solitaire {
   }
 
   string StringOf(Rank rank) {
-    return (string []) { "A", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
-        "J", "Q", "K" }[IntOf(rank)];
+    return (string []) { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J",
+        "Q", "K" }[IntOf(rank)];
   }
 
   string StringOf(Suit suit) {

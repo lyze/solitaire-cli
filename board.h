@@ -110,11 +110,29 @@ namespace solitaire {
   private:
     int numOpenCards;
     mutable Status status;
+    std::forward_list<Card>::iterator* stuckState;
     std::forward_list<Card>::iterator talon;
     std::forward_list<Card>::iterator stock;
     std::forward_list<Card> deck;
     std::vector<SuitPile> foundation;
     std::vector<TableauPile> tableau;
+
+    bool ValidMovesInFrame() const;
+
+    /**
+     * Flip over three more cards to the talon.
+     */
+    void DoNewTalon();
+
+    /**
+     * Get a hint.
+     */
+    void DoGetHint();
+
+    /**
+     * Move cards.
+     */
+    void DoMove();
 
     /**
      * Updates the status of the game board accordingly.
@@ -127,6 +145,11 @@ namespace solitaire {
      * passed in.
      */
     Board(int numOpenCards = 3);
+
+    /**
+     * Resets the game board and deals a new game.
+     */
+    void Reset(int numOpenCards = 3);
 
     /**
      * Check whether the talon is empty.
@@ -143,22 +166,23 @@ namespace solitaire {
      */
     bool DeckEmpty() const;
 
+    /**
+     * Return the accessible card from the talon.
+     */
+    Card& GetTalonCard() const;
+
     enum class Play { DRAW = 1, MOVE, HINT, RESTART };
 
     /**
      * Perform the play action on the board.
      */
-    bool PerformPlay(Play play);
+    void PerformPlay(Play play);
 
     /**
      * Draws the board to be displayed through the command line.
      */
     void DrawBoard() const;
 
-    /**
-     * Flip over three more cards to the talon.
-     */
-    void DoNewTalon();
 
     class Action;
 

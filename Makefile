@@ -41,7 +41,7 @@ clean:
 
 todolist:
 	@echo "Checking for \"TODO\" and \"FIXME\" in $(SRC) $(HDR)..."; \
-	for file in $(HW_FILES); do					 \
+	for file in $(SRC) $(HDR); do					 \
 		fgrep -Hni -e TODO -e FIXME $$file;			 \
 	done;								 \
 	exit 0;
