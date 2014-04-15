@@ -31,36 +31,16 @@ int SetupGame() {
   return numOpenCards;
 }
 
-bool PerformPlay(Play play, Board board) {
-  switch (play) {
-  case Play::DEAL:
-    //todo: deal
-    // board.DrawBoard();
-    return true;
-  case Play::MOVE:
-    // todo: move
-    // board.DrawBoard();
-    return true;
-  case Play::HINT:
-    // todo: hint
-    return true;
-  case Play::RESTART:
-    // todo: restart
-    return true;
-  default:
-    return false;
-  }
-}
-
-int IntOf(Play play) {
+int IntOf(Board::Play play) {
   return static_cast<int>(play);
 }
 
 static inline bool IsPlayOptionValid(int option) {
-  return option >= IntOf(Play::DEAL) && option <= IntOf(Play::RESTART);
+  return option >= IntOf(Board::Play::DRAW)
+    && option <= IntOf(Board::Play::RESTART);
 }
 
-Play GetPlay () {
+Board::Play GetPlay () {
   int option = 0;
   cout << "Play Options:" << endl
        << "(1) Deal new upturned card(s)" << endl
@@ -82,14 +62,14 @@ Play GetPlay () {
   // - How many cards?
   // - To where would you like to move the card(s)?
 
-  if (option == IntOf(Play::DEAL)) {
-    return Play::DEAL;
-  } else if (option == IntOf(Play::MOVE)) {
-    return Play::MOVE;
-  } else if (option == IntOf(Play::HINT)) {
-    return Play::HINT;
+  if (option == IntOf(Board::Play::DRAW)) {
+    return Board::Play::DRAW;
+  } else if (option == IntOf(Board::Play::MOVE)) {
+    return Board::Play::MOVE;
+  } else if (option == IntOf(Board::Play::HINT)) {
+    return Board::Play::HINT;
   }
-  return Play::RESTART;
+  return Board::Play::RESTART;
 }
 
 int main (int argc, char* argv[]) {
@@ -103,7 +83,7 @@ int main (int argc, char* argv[]) {
   // while the game still has valid moves or the user wants to continue playing
   while (game) {
     game.DrawBoard();
-    while (!PerformPlay(GetPlay(), game)) { }
+    while (!game.PerformPlay(GetPlay())) { }
   }
 
   Board::Status status = game.GetStatus();

@@ -63,6 +63,7 @@ namespace solitaire {
 
   Board::Board(int numOpenCards)
     : numOpenCards(numOpenCards),
+      status(Status::PLAYING),
       foundation(NUM_SUITS + 1, SuitPile()),
       tableau(TABLEAU_SIZE, TableauPile()) {
 
@@ -112,7 +113,6 @@ namespace solitaire {
     deck = forward_list<Card>(it, all.end());
     stock = deck.begin();
     talon = deck.end();
-    UpdateStatus();
   }
 
   bool Board::TalonEmpty() const {
@@ -132,6 +132,7 @@ namespace solitaire {
   }
 
   void Board::UpdateStatus() {
+
     // TODO
     // Update status if stuck.
   }
@@ -139,6 +140,59 @@ namespace solitaire {
   Board::Status Board::GetStatus() const {
     return status;
   }
+
+  template <class iterator>
+  static void SafeAdvance(iterator& it, iterator end, size_t delta) {
+    while (it != end && delta--) {
+      ++it;
+    }
+  }
+
+  template <class iterator>
+  static iterator SafeNext(iterator it, iterator end, size_t delta) {
+    SafeAdvance(it, end, delta);
+    return it;
+  }
+
+  bool Board::PerformPlay(Play play) {
+    switch (play) {
+    case Play::DRAW:
+      DoNewTalon();
+      return true;
+    case Play::MOVE:
+      // todo: move
+      // board.DrawBoard();
+      return true;
+    case Play::HINT:
+      // todo: hint
+      return true;
+    case Play::RESTART:
+      // todo: restart
+      return true;
+    default:
+      return false;
+    }
+  }
+
+  void Board::DoNewTalon() {
+    if (deck.empty()) {
+      return;
+    }
+    // TODO: check valid
+
+    if (stock == deck.end()) { // reached end of the stock
+      talon = deck.end();
+      stock = deck.begin();
+    } else if (talon == deck.end()) {
+      talon = deck.begin();
+      stock = SafeNext(talon, deck.end(), numOpenCards);
+    } else {                   // keep stock position relative to talon
+      SafeAdvance(talon, deck.end(), numOpenCards);
+      stock = SafeNext(talon, deck.end(), numOpenCards);
+    }
+
+  }
+
 
   void Board::DrawBoard() const {
     // Display the stock area
@@ -155,7 +209,7 @@ namespace solitaire {
       }
     } else {
       int n = 0;
-      for (forward_list<Card>::iterator it = talon; talon != stock; next(it)) {
+      for (forward_list<Card>::iterator it = talon; it != stock; ++it) {
         (*it).Print();
         n++;
       }

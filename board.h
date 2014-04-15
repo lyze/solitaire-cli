@@ -109,7 +109,7 @@ namespace solitaire {
     enum class Status { STUCK, PLAYING, WON };
   private:
     int numOpenCards;
-    Status status;
+    mutable Status status;
     std::forward_list<Card>::iterator talon;
     std::forward_list<Card>::iterator stock;
     std::forward_list<Card> deck;
@@ -143,10 +143,22 @@ namespace solitaire {
      */
     bool DeckEmpty() const;
 
+    enum class Play { DRAW = 1, MOVE, HINT, RESTART };
+
+    /**
+     * Perform the play action on the board.
+     */
+    bool PerformPlay(Play play);
+
     /**
      * Draws the board to be displayed through the command line.
      */
     void DrawBoard() const;
+
+    /**
+     * Flip over three more cards to the talon.
+     */
+    void DoNewTalon();
 
     class Action;
 
