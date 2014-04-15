@@ -11,11 +11,7 @@
 using namespace std;
 using namespace solitaire;
 
-/* Display the welcome message and prompt user for type
-   of game (one-card or three-card). Returns the number of
-   cards to use in the game.
- */
-int SetupGame () {
+int SetupGame() {
   int numOpenCards = 0;
 
   // Display welcome and set up game
@@ -35,10 +31,7 @@ int SetupGame () {
   return numOpenCards;
 }
 
-/* Perform the user selected play. If option is invalid, return
-   false. If play performed, return true.
-*/
-bool PerformPlay (Play play, Board board) {
+bool PerformPlay(Play play, Board board) {
   switch (play) {
   case Play::DEAL:
     //todo: deal
@@ -59,23 +52,27 @@ bool PerformPlay (Play play, Board board) {
   }
 }
 
-/* Display playing options and prompt user to enter choice.
-   Returns the play if valid.
-*/
+int IntOf(Play play) {
+  return static_cast<int>(play);
+}
+
+static inline bool IsPlayOptionValid(int option) {
+  return option >= IntOf(Play::DEAL) && option <= IntOf(Play::RESTART);
+}
+
 Play GetPlay () {
-  int play = 0;
+  int option = 0;
   cout << "Play Options:" << endl
        << "(1) Deal new upturned card(s)" << endl
        << "(2) Move card(s)" << endl
        << "(3) Get a hint" << endl
        << "(4) Restart the game" << endl << endl
        << "Select a move: ";
-  cin >> play;
+  cin >> option;
 
-  while (play != Play::DEAL || play != Play::MOVE || 
-	 play != Play::HINT || play != Play::RESTART) {
+  while (!IsPlayOptionValid(option)) {
     cout << "Please enter a valid play option: ";
-    cin >> play;
+    cin >> option;
   }
   // todo: error checking for getPlay
 
@@ -85,14 +82,14 @@ Play GetPlay () {
   // - How many cards?
   // - To where would you like to move the card(s)?
 
-  if (play == Play::DEAL) {
+  if (option == IntOf(Play::DEAL)) {
     return Play::DEAL;
-  } else if (play == Play::MOVE) {
+  } else if (option == IntOf(Play::MOVE)) {
     return Play::MOVE;
-  } else if (play == Play::HINT) {
+  } else if (option == IntOf(Play::HINT)) {
     return Play::HINT;
   }
-   return Play::RESTART;
+  return Play::RESTART;
 }
 
 int main (int argc, char* argv[]) {
