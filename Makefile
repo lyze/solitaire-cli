@@ -1,6 +1,6 @@
-HW_NAME = solitaire
+HW_NAME = alpha
 HW_FILES = Makefile $(SRC) $(HDR)
-HW_TURNIN_DIR  = project
+HW_TURNIN_DIR  = solitaire
 HW_SCRATCH_DIR = scratch
 TEST_HW_CMD =
 
