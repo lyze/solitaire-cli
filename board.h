@@ -34,14 +34,25 @@ namespace solitaire {
      * position.
      */
     template <class InputIterator>
-      void Insert(std::list<Card>::const_iterator position, InputIterator first,
+      void Insert(std::list<Card>::iterator position, InputIterator first,
                   InputIterator last);
 
     /**
-     * Erases the pile starting at first and ending at last.
+     * Inserts the card at the end
      */
-    template <class const_iterator>
-      void Erase(const_iterator first, const_iterator last);
+    void PushBack(const Card& card);
+
+    /**
+     * Erases the cards starting at first and ending at last.
+     */
+    void Erase(std::list<Card>::iterator first,
+               std::list<Card>::iterator last);
+
+    /**
+     * Erases the card at the position.
+     */
+    void Erase(std::list<Card>::iterator position);
+
     /**
      * Returns a pointer to the last element of the pile.
      */
@@ -57,6 +68,12 @@ namespace solitaire {
      * pile.
      */
     std::list<Card>::const_iterator End() const;
+
+    /**
+     * Returns an iterator that starts at the first position past the end of the
+     * pile.
+     */
+    std::list<Card>::iterator End();
 
     /**
      * Returns an iterator that begins at the reverse end of the pile.
@@ -75,7 +92,8 @@ namespace solitaire {
   class TableauPile : public CardPile {
     friend class Board;
   private:
-    std::list<Card>::const_iterator shown;
+    std::list<Card>::const_iterator cshown;
+    std::list<Card>::iterator shown;
   public:
     using CardPile::CardPile;
 
@@ -83,6 +101,9 @@ namespace solitaire {
      * Returns whether all the cards in the tableau pile are shown.
      */
     bool AllShown() const;
+
+    std::list<Card>::const_iterator ShownBegin() const;
+    std::list<Card>::iterator ShownBegin();
   };
 
   /**
@@ -110,10 +131,10 @@ namespace solitaire {
   private:
     int numOpenCards;
     mutable Status status;
-    std::forward_list<Card>::iterator* stuckState;
-    std::forward_list<Card>::iterator talon;
-    std::forward_list<Card>::iterator stock;
-    std::forward_list<Card> deck;
+    std::list<Card>::iterator* stuckState;
+    std::list<Card>::iterator talon;
+    std::list<Card>::iterator stock;
+    std::list<Card> deck;
     std::vector<SuitPile> foundation;
     std::vector<TableauPile> tableau;
 
@@ -132,7 +153,33 @@ namespace solitaire {
     /**
      * Move cards.
      */
-    void DoMove();
+    void DoMove(int fromN, int toN, int fromIdx, int toIdx);
+
+    /**
+     * Move the talon card to the foundation.
+     */
+    bool DoMoveTalonToFoundation();
+
+    /**
+     * Move the card(s) from the tableau to the foundation.
+     */
+    bool DoMoveTableauToFoundation(int idx);
+
+    /**
+     * Move the talon card to the tableau.
+     */
+    bool DoMoveTalonToTableau(int idx);
+
+    /**
+     * Move the card from the foundation pile to the tableau pile.
+     */
+    bool DoMoveFoundationToTableau(int foundationIdx, int tableauIdx);
+
+    /**
+     * Move the card(s) from the source tableau pile to the destination tableau
+     * pile.
+     */
+    bool DoMoveTableauToTableau(int fromIdx, int toIdx);
 
     /**
      * Updates the status of the game board accordingly.
@@ -169,7 +216,19 @@ namespace solitaire {
     /**
      * Return the accessible card from the talon.
      */
-    Card& GetTalonCard() const;
+    Card& GetTalonCard();
+
+    /**
+     * Return the accessible card from the talon.
+     */
+    const Card& GetTalonCard() const;
+
+    /**
+     * Return an iterator to the accessible talon card.
+     */
+    std::list<Card>::const_iterator GetTalonCardIterator() const;
+
+    std::list<Card>::iterator GetTalonCardIterator();
 
     enum class Play { DRAW = 1, MOVE, HINT, RESTART };
 

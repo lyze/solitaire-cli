@@ -54,6 +54,10 @@ namespace solitaire {
      */
     bool SuitDifferentFrom(Card card) const;
 
+    bool SuitSameAs(Card card) const;
+
+    bool SuitOppositeColorFrom(Card card) const;
+
     /**
      * Returns whether the card is a king.
      */
