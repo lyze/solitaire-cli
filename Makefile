@@ -1,4 +1,4 @@
-HW_NAME = alpha
+HW_NAME = project
 HW_FILES = Makefile $(SRC) $(HDR)
 HW_TURNIN_DIR  = solitaire
 HW_SCRATCH_DIR = scratch
