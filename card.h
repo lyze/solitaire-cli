@@ -11,10 +11,10 @@
 #include <string>
 #include <vector>
 
-#define DECK_SIZE 52
-#define NUM_SUITS 4
-
 namespace solitaire {
+  const int kNumSuits = 4;
+  const int kDeckSize = 52;
+
   enum class Rank { _A = 1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _J, _Q, _K };
   enum class Suit { SPADES, HEARTS, CLUBS, DIAMONDS };
 

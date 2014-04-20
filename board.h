@@ -10,9 +10,9 @@
 #include <vector>
 #include "card.h"
 
-#define TABLEAU_SIZE 7
-
 namespace solitaire {
+  const int kTableauSize = 7;
+
   // Board class (implemented below)
   class Board;
 
@@ -129,57 +129,19 @@ namespace solitaire {
   public:
     enum class Status { STUCK, PLAYING, WON };
   private:
+    typedef std::vector<SuitPile> Foundation;
+    typedef std::vector<TableauPile> Tableau;
+
     int numOpenCards;
     mutable Status status;
     std::list<Card>::iterator* stuckState;
     std::list<Card>::iterator talon;
     std::list<Card>::iterator stock;
     std::list<Card> deck;
-    std::vector<SuitPile> foundation;
-    std::vector<TableauPile> tableau;
+    Foundation foundation;
+    Tableau tableau;
 
     bool ValidMovesInFrame() const;
-
-    /**
-     * Flip over three more cards to the talon.
-     */
-    void DoNewTalon();
-
-    /**
-     * Get a hint.
-     */
-    void DoGetHint();
-
-    /**
-     * Move cards.
-     */
-    void DoMove(int fromN, int toN, int fromIdx, int toIdx);
-
-    /**
-     * Move the talon card to the foundation.
-     */
-    bool DoMoveTalonToFoundation();
-
-    /**
-     * Move the card(s) from the tableau to the foundation.
-     */
-    bool DoMoveTableauToFoundation(int idx);
-
-    /**
-     * Move the talon card to the tableau.
-     */
-    bool DoMoveTalonToTableau(int idx);
-
-    /**
-     * Move the card from the foundation pile to the tableau pile.
-     */
-    bool DoMoveFoundationToTableau(int foundationIdx, int tableauIdx);
-
-    /**
-     * Move the card(s) from the source tableau pile to the destination tableau
-     * pile.
-     */
-    bool DoMoveTableauToTableau(int fromIdx, int toIdx);
 
     /**
      * Updates the status of the game board accordingly.
@@ -230,26 +192,48 @@ namespace solitaire {
 
     std::list<Card>::iterator GetTalonCardIterator();
 
-    enum class Play { DRAW = 1, MOVE, HINT, RESTART };
+    /**
+     * Flip over three more cards to the talon.
+     */
+    void DoNewTalon();
 
     /**
-     * Perform the play action on the board.
+     * Get a hint.
      */
-    void PerformPlay(Play play);
+    void DoGetHint();
+
+    /**
+     * Move the talon card to the foundation.
+     */
+    bool DoMoveTalonToFoundation();
+
+    /**
+     * Move the card(s) from the tableau to the foundation.
+     */
+    bool DoMoveTableauToFoundation(Tableau::size_type tableauIdx);
+
+    /**
+     * Move the talon card to the tableau.
+     */
+    bool DoMoveTalonToTableau(Tableau::size_type tableauIdx);
+
+    /**
+     * Move the card from the foundation pile to the tableau pile.
+     */
+    bool DoMoveFoundationToTableau(Foundation::size_type foundationIdx,
+                                   Tableau::size_type tableauIdx);
+
+    /**
+     * Move the card(s) from the source tableau pile to the destination tableau
+     * pile.
+     */
+    bool DoMoveTableauToTableau(Tableau::size_type fromIdx,
+                                Tableau::size_type toIdx);
 
     /**
      * Draws the board to be displayed through the command line.
      */
     void DrawBoard() const;
-
-
-    class Action;
-
-    template <class InputIterator, class const_iterator>
-      std::vector<Action> GetValidActions();
-
-    enum class FromLocation { FOUNDATION, TABLEAU, TALON };
-    enum class ToLocation { FOUNDATION, TABLEAU };
 
     /**
      * Returns the current status of the game.

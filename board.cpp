@@ -89,8 +89,8 @@ namespace solitaire {
     this->numOpenCards = numOpenCards;
     status = Status::PLAYING;
     stuckState = nullptr;
-    foundation = vector<SuitPile>(NUM_SUITS + 1);
-    tableau = vector<TableauPile>(TABLEAU_SIZE);
+    foundation = vector<SuitPile>(kNumSuits);
+    tableau = vector<TableauPile>(kTableauSize);
 
     // Creates a vector of all the cards in a deck
     vector<Card> all = {
@@ -128,7 +128,7 @@ namespace solitaire {
 
     // make the tableau
     vector<Card>::iterator it = all.begin();
-    for (int i = 0; i < TABLEAU_SIZE; i++) {
+    for (int i = 0; i < kTableauSize; i++) {
       tableau[i] = TableauPile(it, next(it, i + 1));
       tableau[i].shown = prev(tableau[i].End());
       tableau[i].cshown = prev(tableau[i].End());
@@ -191,32 +191,6 @@ namespace solitaire {
     return it;
   }
 
-  void Board::PerformPlay(Play play) {
-    switch (play) {
-    case Play::DRAW:
-      DoNewTalon();
-      break;
-    case Play::MOVE:
-      // todo: turn move commands into enum classes
-      int fromN, toN, fromIdx, toIdx;
-      cin >> fromN;
-      cin >> toN;
-      cin >> fromIdx;
-      cin >> toIdx;
-      DoMove(fromN, toN, fromIdx, toIdx);
-      break;
-    case Play::HINT:
-      DoGetHint();
-    break;
-    case Play::RESTART:
-      // todo: restart
-      break;
-    default:
-      break;
-    }
-
-    UpdateStatus();
-  }
 
   void Board::DoNewTalon() {
     if (deck.empty()) {
@@ -298,14 +272,19 @@ namespace solitaire {
           --talon;
         }
         deck.erase(position);
+
+        UpdateStatus();
         return true;
       }
     }
     return false;
   }
 
-  bool Board::DoMoveTableauToFoundation(int idx) {
-    TableauPile& tableauPile = tableau[idx];
+  bool Board::DoMoveTableauToFoundation(Tableau::size_type tableauIdx) {
+    if (tableauIdx >= tableau.size()) {
+      return false;
+    }
+    TableauPile& tableauPile = tableau[tableauIdx];
     if (tableauPile.Empty()) {
       return false;
     }
@@ -320,44 +299,58 @@ namespace solitaire {
           --tableauPile.cshown;
         }
         tableauPile.Erase(it);
+
+        UpdateStatus();
         return true;
       }
     }
     return false;
   }
 
-  bool Board::DoMoveTalonToTableau(int idx) {
+  bool Board::DoMoveTalonToTableau(Foundation::size_type tableauIdx) {
+    if (tableauIdx >= tableau.size()) {
+      return false;
+    }
     Card& talonCard = GetTalonCard();
-    if (CanBuildDown(talonCard, tableau[idx])) {
-        tableau[idx].PushBack(talonCard);
+    if (CanBuildDown(talonCard, tableau[tableauIdx])) {
+        tableau[tableauIdx].PushBack(talonCard);
         list<Card>::iterator position = GetTalonCardIterator();
         if (position == talon) {
           --talon;
         }
         deck.erase(position);
+
+        UpdateStatus();
         return true;
     }
     return false;
   }
 
-  bool Board::DoMoveFoundationToTableau(int foundationIdx, int tableauIdx) {
+  bool Board::DoMoveFoundationToTableau(Foundation::size_type foundationIdx,
+                                        Tableau::size_type tableauIdx) {
+    if (foundationIdx >= foundation.size()) {
+      return false;
+    }
     TableauPile& tableauPile = tableau[tableauIdx];
     SuitPile& suitPile = foundation[foundationIdx];
     if (suitPile.Empty()) {
       return false;
     }
-
     list<Card>::iterator it = --suitPile.End();
     if (CanBuildDown(*it, tableauPile)) {
       tableauPile.PushBack(*it);
       suitPile.Erase(it);
+
+      UpdateStatus();
       return true;
     }
     return false;
   }
 
-  bool Board::DoMoveTableauToTableau(int fromIdx, int toIdx) {
-    if (fromIdx == toIdx) {
+  bool Board::DoMoveTableauToTableau(Tableau::size_type fromIdx,
+                                     Tableau::size_type toIdx) {
+    if (fromIdx == toIdx || fromIdx >= tableau.size()
+        || toIdx >= tableau.size()) {
       return false;
     }
 
@@ -372,19 +365,14 @@ namespace solitaire {
           --fromPile.shown;
           --fromPile.cshown;
         }
-
         fromPile.Erase(it, fromPile.End());
+
+        UpdateStatus();
         return true;
       }
     }
     return false;
   }
-
-
-  void Board::DoMove(int fromN, int toN, int fromIdx, int toIdx) {
-    DoMoveTableauToTableau(fromIdx, toIdx);
-  }
-
 
   Card& Board::GetTalonCard() {
     return *GetTalonCardIterator();
