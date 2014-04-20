@@ -42,12 +42,8 @@ namespace solitaire {
     out << StringOf(rank) << StringOf(suit);
   }
 
-  bool Card::RankLessThan(Card card) const {
-    return IntOf(rank) < IntOf(card.rank);
-  }
-
-  bool Card::SuitDifferentFrom(Card card) const {
-    return IntOf(suit) != IntOf(card.suit);
+  bool Card::RankOneLessThan(Card card) const {
+    return IntOf(rank) + 1 == IntOf(card.rank);
   }
 
   bool Card::SuitSameAs(Card card) const {

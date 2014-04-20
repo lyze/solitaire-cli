@@ -47,15 +47,16 @@ namespace solitaire {
     /**
      * Compares the ranks of two cards.
      */
-    bool RankLessThan(Card card) const;
+    bool RankOneLessThan(Card card) const;
 
     /**
      * Compares the suit of two cards.
      */
-    bool SuitDifferentFrom(Card card) const;
-
     bool SuitSameAs(Card card) const;
 
+    /**
+     * Compares the suit of two cards.
+     */
     bool SuitOppositeColorFrom(Card card) const;
 
     /**

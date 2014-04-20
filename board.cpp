@@ -231,7 +231,7 @@ namespace solitaire {
    * the tableau pile; otherwise, returns false.
    */
   static inline bool CanBuildDown(Card kingHigh, Card aceLow) {
-    return aceLow.RankLessThan(kingHigh)
+    return aceLow.RankOneLessThan(kingHigh)
       && kingHigh.SuitOppositeColorFrom(aceLow);
   }
 
@@ -250,7 +250,7 @@ namespace solitaire {
    * foundation pile; otherwise, returnse false.
    */
   static inline bool CanBuildUp(Card aceLow, Card kingHigh) {
-    return aceLow.RankLessThan(kingHigh) && aceLow.SuitSameAs(kingHigh);
+    return aceLow.RankOneLessThan(kingHigh) && aceLow.SuitSameAs(kingHigh);
   }
 
   static inline bool CanBuildUp(Card card, SuitPile suitPile) {
