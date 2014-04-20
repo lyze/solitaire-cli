@@ -15,6 +15,7 @@ template <typename OptionRangeType>
 OptionRangeType GetOption(OptionRangeType min, OptionRangeType max);
 
 std::string GetChoice(std::string a, std::string b);
+
 int GetChoice(int a, int b);
 
 bool GetBoolChoice(std::string trueString, std::string falseString);
@@ -45,5 +46,4 @@ namespace solitaire {
   bool DoPlay(Board& game, Play playOption);
 
   bool DoMove(Board& game, Move moveOption);
-
 }

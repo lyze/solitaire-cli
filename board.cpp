@@ -15,15 +15,15 @@ namespace solitaire {
   using namespace std;
 
   // CardPile constructors
-  CardPile::CardPile() : pile(list<Card>()) { }
+  CardPile::CardPile() : pile(Pile()) { }
 
   // CardPile constructor with a pointer to the first card and last car
   template <class InputIterator>
   CardPile::CardPile(InputIterator first, InputIterator last)
-    : pile(list<Card>(first, last)) { }
+    : pile(Pile(first, last)) { }
 
   template <class InputIterator>
-  void CardPile::Insert(list<Card>::iterator position, InputIterator first,
+  void CardPile::Insert(Pile::iterator position, InputIterator first,
                         InputIterator last) {
     pile.insert(position, first, last);
   }
@@ -32,12 +32,12 @@ namespace solitaire {
     pile.push_back(card);
   }
 
-  void CardPile::Erase(list<Card>::iterator first,
-                       list<Card>::iterator last) {
+  void CardPile::Erase(Pile::iterator first,
+                       Pile::iterator last) {
     pile.erase(first, last);
   }
 
-  void CardPile::Erase(list<Card>::iterator position) {
+  void CardPile::Erase(Pile::iterator position) {
     pile.erase(position);
   }
 
@@ -45,19 +45,19 @@ namespace solitaire {
     return pile.back();
   }
 
-  list<Card>::const_iterator CardPile::Begin() const {
+  CardPile::Pile::const_iterator CardPile::Begin() const {
     return pile.begin();
   }
 
-  list<Card>::const_iterator CardPile::End() const {
+  CardPile::Pile::const_iterator CardPile::End() const {
     return pile.end();
   }
 
-  list<Card>::iterator CardPile::End() {
+  CardPile::Pile::iterator CardPile::End() {
     return pile.end();
   }
 
-  list<Card>::const_reverse_iterator CardPile::REnd() const {
+  CardPile::Pile::const_reverse_iterator CardPile::REnd() const {
     return pile.rend();
   }
 
@@ -69,11 +69,11 @@ namespace solitaire {
     return shown == Begin();
   }
 
-  list<Card>::const_iterator TableauPile::ShownBegin() const {
+  CardPile::Pile::const_iterator TableauPile::ShownBegin() const {
     return cshown;
   }
 
-  list<Card>::iterator TableauPile::ShownBegin() {
+  CardPile::Pile::iterator TableauPile::ShownBegin() {
     return shown;
   }
 
@@ -136,7 +136,7 @@ namespace solitaire {
     }
 
     // make the stock cards
-    deck = list<Card>(it, all.end());
+    deck = CardPile::Pile(it, all.end());
     stock = deck.begin();
     talon = deck.end();
   }
@@ -269,7 +269,7 @@ namespace solitaire {
     for (SuitPile& suitPile : foundation) {
       if (CanBuildUp(talonCard, suitPile)) {
         suitPile.PushBack(talonCard);
-        list<Card>::iterator position = GetTalonCardIterator();
+        CardPile::Pile::iterator position = GetTalonCardIterator();
         if (position == talon) {
           --talon;
         }
@@ -291,7 +291,7 @@ namespace solitaire {
       return false;
     }
 
-    list<Card>::iterator it = prev(tableauPile.End());
+    CardPile::Pile::iterator it = prev(tableauPile.End());
     for (SuitPile& suitPile : foundation) {
       if (CanBuildUp(*it, suitPile)) {
         suitPile.PushBack(*it);
@@ -316,7 +316,7 @@ namespace solitaire {
     Card& talonCard = GetTalonCard();
     if (CanBuildDown(talonCard, tableau[tableauIdx])) {
         tableau[tableauIdx].PushBack(talonCard);
-        list<Card>::iterator position = GetTalonCardIterator();
+        CardPile::Pile::iterator position = GetTalonCardIterator();
         if (position == talon) {
           --talon;
         }
@@ -338,7 +338,7 @@ namespace solitaire {
     if (suitPile.Empty()) {
       return false;
     }
-    list<Card>::iterator it = --suitPile.End();
+    CardPile::Pile::iterator it = --suitPile.End();
     if (CanBuildDown(*it, tableauPile)) {
       tableauPile.PushBack(*it);
       suitPile.Erase(it);
@@ -358,7 +358,7 @@ namespace solitaire {
 
     TableauPile& fromPile = tableau[fromIdx];
     TableauPile& toPile = tableau[toIdx];
-    for (list<Card>::iterator it = fromPile.ShownBegin(); it != fromPile.End();
+    for (CardPile::Pile::iterator it = fromPile.ShownBegin(); it != fromPile.End();
          ++it) {
       if (CanBuildDown(*it, toPile)) {
         toPile.Insert(toPile.End(), it, fromPile.End());
@@ -384,11 +384,11 @@ namespace solitaire {
     return *GetTalonCardIterator();
   }
 
-  list<Card>::const_iterator Board::GetTalonCardIterator() const {
+  CardPile::Pile::const_iterator Board::GetTalonCardIterator() const {
     return prev(stock);
   }
 
-  list<Card>::iterator Board::GetTalonCardIterator() {
+  CardPile::Pile::iterator Board::GetTalonCardIterator() {
     return prev(stock);
   }
 
@@ -472,7 +472,7 @@ namespace solitaire {
       }
     } else {
       int n = 0;
-      for (list<Card>::iterator it = talon; it != stock; ++it) {
+      for (CardPile::Pile::iterator it = talon; it != stock; ++it) {
         cout << setw(2);
         (*it).Print();
         cout << " ";
@@ -500,7 +500,7 @@ namespace solitaire {
 
     // Display the tableau area
     int tableauSize = distance(tableau.begin(), tableau.end());
-    vector<list<Card>::const_iterator> piles;
+    vector<CardPile::Pile::const_iterator> piles;
     for (int i = 0; i < tableauSize; i++) {
       piles.push_back(tableau[i].Begin());
     }
@@ -511,7 +511,7 @@ namespace solitaire {
     do {
       isTableauPrintingDone = true;
       for (int i = 0; i < tableauSize; i++) {
-        list<Card>::const_iterator& cardIt = piles[i];
+        CardPile::Pile::const_iterator& cardIt = piles[i];
         if (cardIt == tableau[i].End()) {
           cout << "    ";
         } else {

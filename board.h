@@ -13,19 +13,24 @@
 namespace solitaire {
   const int kTableauSize = 7;
 
-  // Board class (implemented below)
+  // forward declaration
   class Board;
 
-  // CardPile class to create a pile of cards
   class CardPile {
   private:
     std::list<Card> pile;
-  public:
-    friend class Board;
 
+  public:
+    typedef std::list<Card> Pile;
+
+    /**
+     * Initializes a pile of cards with nothing in it.
+     */
     CardPile();
 
-    // CardPile constructor
+    /**
+     * Initializes a pile of cards from the range provided.
+     */
     template <class InputIterator>
       CardPile(InputIterator first, InputIterator last);
 
@@ -34,7 +39,7 @@ namespace solitaire {
      * position.
      */
     template <class InputIterator>
-      void Insert(std::list<Card>::iterator position, InputIterator first,
+      void Insert(Pile::iterator position, InputIterator first,
                   InputIterator last);
 
     /**
@@ -45,13 +50,12 @@ namespace solitaire {
     /**
      * Erases the cards starting at first and ending at last.
      */
-    void Erase(std::list<Card>::iterator first,
-               std::list<Card>::iterator last);
+    void Erase(Pile::iterator first, Pile::iterator last);
 
     /**
      * Erases the card at the position.
      */
-    void Erase(std::list<Card>::iterator position);
+    void Erase(Pile::iterator position);
 
     /**
      * Returns a pointer to the last element of the pile.
@@ -61,24 +65,24 @@ namespace solitaire {
     /**
      * Returns an iterator that begins at the first element in the pile.
      */
-    std::list<Card>::const_iterator Begin() const;
+    Pile::const_iterator Begin() const;
 
     /**
      * Returns an iterator that starts at the first position past the end of the
      * pile.
      */
-    std::list<Card>::const_iterator End() const;
+    Pile::const_iterator End() const;
 
     /**
      * Returns an iterator that starts at the first position past the end of the
      * pile.
      */
-    std::list<Card>::iterator End();
+    Pile::iterator End();
 
     /**
      * Returns an iterator that begins at the reverse end of the pile.
      */
-    std::list<Card>::const_reverse_iterator REnd() const;
+    Pile::const_reverse_iterator REnd() const;
 
     /**
      * Returns whether a pile is empty.
@@ -90,10 +94,14 @@ namespace solitaire {
    * TableauPile represents one stack on the tableau.
    */
   class TableauPile : public CardPile {
-    friend class Board;
   private:
-    std::list<Card>::const_iterator cshown;
-    std::list<Card>::iterator shown;
+    /**
+     * A board should be able to manage the card piles in play.
+     */
+    friend class Board;
+    Pile::const_iterator cshown;
+    Pile::iterator shown;
+
   public:
     using CardPile::CardPile;
 
@@ -102,16 +110,30 @@ namespace solitaire {
      */
     bool AllShown() const;
 
-    std::list<Card>::const_iterator ShownBegin() const;
-    std::list<Card>::iterator ShownBegin();
+    /**
+     * Returns an iterator to the first face-up card in the pile.
+     */
+    Pile::const_iterator ShownBegin() const;
+
+    /**
+     * Returns an iterator to the first face-up card in the pile.
+     */
+    Pile::iterator ShownBegin();
   };
 
   /**
    * SuitPile represents one stack on the foundation.
    */
   class SuitPile : public CardPile {
-    friend class Board;
   private:
+    /**
+     * A board should be able to manage the card piles in play.
+     */
+    friend class Board;
+
+    /**
+     * The suit of all cards in this pile.
+     */
     Suit suit;
   public:
     using CardPile::CardPile;
@@ -134,13 +156,17 @@ namespace solitaire {
 
     int numOpenCards;
     mutable Status status;
-    std::list<Card>::iterator* stuckState;
-    std::list<Card>::iterator talon;
-    std::list<Card>::iterator stock;
-    std::list<Card> deck;
+    CardPile::Pile::iterator* stuckState;
+    CardPile::Pile::iterator talon;
+    CardPile::Pile::iterator stock;
+    CardPile::Pile deck;
     Foundation foundation;
     Tableau tableau;
 
+    /**
+     * Returns true if there are valid moves to play in the current frame;
+     * otherwise, returns false.
+     */
     bool ValidMovesInFrame() const;
 
     /**
@@ -150,8 +176,7 @@ namespace solitaire {
 
   public:
     /**
-     * Constructor to create a new board. The number of open cards (1 or 3) is
-     * passed in.
+     * Creates a new board, given the number of open cards for the talon.
      */
     Board(int numOpenCards = 3);
 
@@ -161,36 +186,39 @@ namespace solitaire {
     void Reset(int numOpenCards = 3);
 
     /**
-     * Check whether the talon is empty.
+     * Checks whether the talon is empty.
      */
     bool TalonEmpty() const;
 
     /**
-     * Check whether the stock is empty.
+     * Checks whether the stock is empty.
      */
     bool StockEmpty() const;
 
     /**
-     * Check whether the deck is empty.
+     * Checks whether the deck is empty.
      */
     bool DeckEmpty() const;
 
     /**
-     * Return the accessible card from the talon.
+     * Returns the accessible card from the talon.
      */
     Card& GetTalonCard();
 
     /**
-     * Return the accessible card from the talon.
+     * Returns the accessible card from the talon.
      */
     const Card& GetTalonCard() const;
 
     /**
-     * Return an iterator to the accessible talon card.
+     * Returns an iterator to the accessible talon card.
      */
-    std::list<Card>::const_iterator GetTalonCardIterator() const;
+    CardPile::Pile::const_iterator GetTalonCardIterator() const;
 
-    std::list<Card>::iterator GetTalonCardIterator();
+    /**
+     * Returns an iterator to the accessible talon card.
+     */
+    CardPile::Pile::iterator GetTalonCardIterator();
 
     /**
      * Flip over three more cards to the talon.
