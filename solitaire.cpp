@@ -10,6 +10,12 @@
 
 using namespace std;
 
+string GetString() {
+  string s;
+  cin >> s;
+  return s;
+}
+
 int GetInt() {
   int n;
   while (true) {
@@ -23,7 +29,7 @@ int GetInt() {
   return n;
 }
 
-int GetIntOption(int min, int max) {
+static int GetIntOptionRange(int min, int max) {
   int option = GetInt();
   while (option < min || option > max) {
     cout << "Please enter a valid option between "
@@ -34,9 +40,13 @@ int GetIntOption(int min, int max) {
 }
 
 template <typename OptionRangeType>
-OptionRangeType GetOption(OptionRangeType min, OptionRangeType max) {
-  return static_cast<OptionRangeType>(GetIntOption(static_cast<int>(min),
-                                                   static_cast<int>(max)));
+OptionRangeType GetOptionRange(OptionRangeType min, OptionRangeType max) {
+  return static_cast<OptionRangeType>(GetIntOptionRange(static_cast<int>(min),
+                                                        static_cast<int>(max)));
+}
+
+int GetOptionRange(int min, int max) {
+  return GetIntOptionRange(min, max);
 }
 
 string GetChoice(string a, string b) {
@@ -61,14 +71,8 @@ int GetChoice(int a, int b) {
   return option;
 }
 
-string GetString() {
-  string s;
-  cin >> s;
-  return s;
-}
-
 namespace solitaire {
-  int SetupGame() {
+  int GetGameConfig() {
     cout << "Welcome to Solitaire!" << endl
          << "Please enter the size of the talon (" << kOneCardGame << " or "
          << kThreeCardGame << "): ";
@@ -89,34 +93,34 @@ namespace solitaire {
          << "(4) Restart the game" << endl
          << endl
          << "Select an option: ";
-    int option = GetIntOption(static_cast<int>(Play::TALON),
-                              static_cast<int>(Play::RESTART));
-
-    return static_cast<Play>(option);
+    return GetOptionRange(Play::TALON, Play::RESTART);
   }
 
   bool DoMove(Board& game, Move moveOption) {
     switch(moveOption) {
     case Move::TALON_TO_FOUNDATION:
       return game.DoMoveTalonToFoundation();
+
     case Move::TABLEAU_TO_FOUNDATION:
       cout << "Which tableau pile contains the card to move to the foundation? ";
-      return game.DoMoveTableauToFoundation(GetOption(0, kTableauSize - 1));
+      return game.DoMoveTableauToFoundation(GetOptionRange(0, kTableauSize - 1));
+
     case Move::TALON_TO_TABLEAU:
       cout << "To which tableau pile will the talon card move? ";
-      return game.DoMoveTalonToTableau(GetOption(0, kTableauSize - 1));
+      return game.DoMoveTalonToTableau(GetOptionRange(0, kTableauSize - 1));
+
     case Move::TABLEAU_TO_TABLEAU: {
       cout << "From which tableau pile will the card(s) move? ";
-      int fromIdx = GetOption(0, kTableauSize - 1);
+      int fromIdx = GetOptionRange(0, kTableauSize - 1);
       cout << "To which tableau pile will the card(s) move? ";
-      int toIdx = GetOption(0, kTableauSize - 1);
+      int toIdx = GetOptionRange(0, kTableauSize - 1);
       return game.DoMoveTableauToTableau(fromIdx, toIdx);
     }
     case Move::FOUNDATION_TO_TABLEAU: {
       cout << "From which foundation pile will the card move? ";
-      int foundationIdx = GetOption(0, kNumSuits - 1);
+      int foundationIdx = GetOptionRange(0, kNumSuits - 1);
       cout << "To which tableau pile will the card move? ";
-      int tableauIdx = GetOption(0, kTableauSize - 1);
+      int tableauIdx = GetOptionRange(0, kTableauSize - 1);
       return game.DoMoveFoundationToTableau(foundationIdx, tableauIdx);
     }
     default:
@@ -128,6 +132,7 @@ namespace solitaire {
     switch (playOption) {
     case Play::TALON:
       return game.DoNewTalon();
+
     case Play::MOVE:
       cout << endl
            << "Move options:" << endl
@@ -138,17 +143,20 @@ namespace solitaire {
            << "(5) Foundation to the tableau" << endl
            << endl
            << "Select a move: ";
-      return DoMove(game, GetOption(Move::TALON_TO_FOUNDATION,
-                                    Move::FOUNDATION_TO_TABLEAU));
+      return DoMove(game, GetOptionRange(Move::TALON_TO_FOUNDATION,
+                                         Move::FOUNDATION_TO_TABLEAU));
+
     case Play::HINT:
       game.DoGetHint();
       return true;
+
     case Play::RESTART:
       cout << "Are you sure you want to reset the board and restart your game (y/n)? ";
       if (GetBoolChoice("y", "n")) {
         game.Reset();
       }
       return true;
+
     default:
       assert(false);
     }
@@ -157,11 +165,11 @@ namespace solitaire {
 
 using namespace solitaire;
 
-int main(int argc, char* argv[]) {
+int main() {
   int numOpenCards;
 
   // start the game and display board
-  numOpenCards = SetupGame();
+  numOpenCards = GetGameConfig();
   Board game(numOpenCards);
 
   // while the game still has valid moves or the user wants to continue playing
@@ -180,7 +188,7 @@ int main(int argc, char* argv[]) {
       cout << "You have no more valid moves! Would you like to restart (y/n)? " << endl;
       if (GetBoolChoice("y", "n")) {
         cout << "Resetting..." << endl;
-        game.Reset(SetupGame());
+        game.Reset(GetGameConfig());
       }
     }
   }
