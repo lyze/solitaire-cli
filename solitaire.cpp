@@ -39,6 +39,28 @@ OptionRangeType GetOption(OptionRangeType min, OptionRangeType max) {
                                                    static_cast<int>(max)));
 }
 
+string GetChoice(string a, string b) {
+  string option = GetString();
+  while (!(a == option || b == option)) {
+    cout << "Please enter either " << a << " or " << b << ": ";
+    option = GetString();
+  }
+  return option;
+}
+
+bool GetBoolChoice(string trueString, string falseString) {
+  return trueString == GetChoice(trueString, falseString);
+}
+
+int GetChoice(int a, int b) {
+  int option = GetInt();
+  while (!(option == a || option == b)) {
+    cout << "Please enter either " << a << " or " << b << ": ";
+    option = GetInt();
+  }
+  return option;
+}
+
 string GetString() {
   string s;
   cin >> s;
@@ -73,47 +95,42 @@ namespace solitaire {
     return static_cast<Play>(option);
   }
 
-  void DoMove(Board& game, Move moveOption) {
+  bool DoMove(Board& game, Move moveOption) {
     switch(moveOption) {
     case Move::TALON_TO_FOUNDATION:
-      game.DoMoveTalonToFoundation();
-      break;
+      return game.DoMoveTalonToFoundation();
     case Move::TABLEAU_TO_FOUNDATION:
       cout << "Which tableau pile contains the card to move to the foundation? ";
-      game.DoMoveTableauToFoundation(GetOption(0, kTableauSize - 1));
-      break;
+      return game.DoMoveTableauToFoundation(GetOption(0, kTableauSize - 1));
     case Move::TALON_TO_TABLEAU:
       cout << "To which tableau pile will the talon card move? ";
-      game.DoMoveTalonToTableau(GetOption(0, kTableauSize - 1));
-      break;
+      return game.DoMoveTalonToTableau(GetOption(0, kTableauSize - 1));
     case Move::TABLEAU_TO_TABLEAU: {
       cout << "From which tableau pile will the card(s) move? ";
       int fromIdx = GetOption(0, kTableauSize - 1);
       cout << "To which tableau pile will the card(s) move? ";
       int toIdx = GetOption(0, kTableauSize - 1);
-      game.DoMoveTableauToTableau(fromIdx, toIdx);
-      break;
+      return game.DoMoveTableauToTableau(fromIdx, toIdx);
     }
     case Move::FOUNDATION_TO_TABLEAU: {
       cout << "From which foundation pile will the card move? ";
       int foundationIdx = GetOption(0, kNumSuits - 1);
       cout << "To which tableau pile will the card move? ";
       int tableauIdx = GetOption(0, kTableauSize - 1);
-      game.DoMoveFoundationToTableau(foundationIdx, tableauIdx);
-      break;
+      return game.DoMoveFoundationToTableau(foundationIdx, tableauIdx);
     }
     default:
       assert(false);
     }
   }
 
-  void DoPlay(Board& game, Play playOption) {
+  bool DoPlay(Board& game, Play playOption) {
     switch (playOption) {
     case Play::TALON:
-      game.DoNewTalon();
-      break;
+      return game.DoNewTalon();
     case Play::MOVE:
-      cout << "Move options:" << endl
+      cout << endl
+           << "Move options:" << endl
            << "(1) Talon card to the foundation" << endl
            << "(2) Tableau card to the foundation" << endl
            << "(3) Talon card to the tableau" << endl
@@ -121,15 +138,17 @@ namespace solitaire {
            << "(5) Foundation to the tableau" << endl
            << endl
            << "Select a move: ";
-      DoMove(game,
-             GetOption(Move::TALON_TO_TABLEAU, Move::FOUNDATION_TO_TABLEAU));
-      break;
+      return DoMove(game, GetOption(Move::TALON_TO_FOUNDATION,
+                                    Move::FOUNDATION_TO_TABLEAU));
     case Play::HINT:
       game.DoGetHint();
-      break;
+      return true;
     case Play::RESTART:
-      // todo: restart
-      break;
+      cout << "Are you sure you want to reset the board and restart your game (y/n)? ";
+      if (GetBoolChoice("y", "n")) {
+        game.Reset();
+      }
+      return true;
     default:
       assert(false);
     }
@@ -144,29 +163,27 @@ int main(int argc, char* argv[]) {
   // start the game and display board
   numOpenCards = SetupGame();
   Board game(numOpenCards);
-  cout << endl;
 
   // while the game still has valid moves or the user wants to continue playing
   while (game) {
+    cout << endl;
     game.DrawBoard();
-    DoPlay(game, GetPlay());
+    if (!DoPlay(game, GetPlay())) {
+      cout << endl
+           << "Nothing done." << endl;
+    }
     Board::Status status = game.GetStatus();
     if (status == Board::Status::WON) {
-      //display winning message
+      cout << endl
+           << "You won!" << endl;
     } else if (status == Board::Status::STUCK) {
-      cout << "You have no more valid moves! Would you like to restart? (y/n) " << endl;
-      // TODO: Get input
-      string s;
-      cin >> s;
-      if (s == "y") {
+      cout << "You have no more valid moves! Would you like to restart (y/n)? " << endl;
+      if (GetBoolChoice("y", "n")) {
+        cout << "Resetting..." << endl;
         game.Reset(SetupGame());
-      } else {
-        // don't do anything
       }
     }
   }
-
-
 
   return 0;
 }

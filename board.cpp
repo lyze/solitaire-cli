@@ -158,7 +158,6 @@ namespace solitaire {
   }
 
   void Board::UpdateStatus() {
-    // TODO: UpdateStatus()
     if (ValidMovesInFrame()) { // valid moves exist...
       stuckState = nullptr;
       return;
@@ -171,6 +170,11 @@ namespace solitaire {
       if (*stuckState == talon) {
         status = Status::STUCK;
       }
+    }
+
+    if (all_of(tableau.begin(), tableau.end(),
+               [](TableauPile tp) { return tp.Empty(); })) {
+      status = Status::WON;
     }
   }
 
@@ -192,9 +196,9 @@ namespace solitaire {
   }
 
 
-  void Board::DoNewTalon() {
+  bool Board::DoNewTalon() {
     if (deck.empty()) {
-      return;
+      return false;
     }
 
     if (stock == deck.end()) { // reached end of the stock
@@ -207,7 +211,7 @@ namespace solitaire {
       SafeAdvance(talon, deck.end(), numOpenCards);
       stock = SafeNext(talon, deck.end(), numOpenCards);
     }
-
+    return true;
   }
 
 
@@ -235,7 +239,6 @@ namespace solitaire {
     if (tableauPile.Empty() && card.IsKing()) {
       return true;
     }
-
     if (!tableauPile.Empty() && CanBuildDown(tableauPile.Last(), card)) {
       return true;
     }
@@ -255,8 +258,7 @@ namespace solitaire {
         && card.IsAce()) {
       return true;
     }
-
-    if (CanBuildUp(suitPile.Last(), card)) {
+    if (!suitPile.Empty() && CanBuildUp(suitPile.Last(), card)) {
       return true;
     }
     return false;
@@ -531,105 +533,5 @@ namespace solitaire {
     } while (!isTableauPrintingDone);
     cout << endl;
   }
-
-
-
-  //TODO
-  /*
-    Board::TurnOverTableauCard::TurnOverTableauCard(TableauPile& pile)
-    : pile(pile) { }
-
-    bool Board::TurnOverTableauCard::DoAction() {
-    if (pile.Empty() || pile.AllShown()) {
-    return false;
-    }
-    pile.shown = prev(pile.shown);
-    return true;
-    }
-
-    Board::TurnOverTalon::TurnOverTalon(Board& board) : board(board) { };
-
-    bool Board::TurnOverTalon::DoAction() {
-    if (board.DeckEmpty()) {
-    return false;
-    }
-    board.talon = board.stock;
-    if (board.StockEmpty()) {
-    board.stock = board.deck.begin();
-    }
-    board.stock = next(board.stock, board.numOpenCards);
-    return true;
-    }
-
-    template <class InputIterator, class const_iterator>
-    Board::Move<InputIterator, const_iterator>
-    ::Move(FromLocation fromLocation, CardPile& from, InputIterator begin,
-    InputIterator end, ToLocation toLocation, CardPile& to,
-    const_iterator position)
-    : fromLocation(fromLocation),
-    from(from),
-    toLocation(toLocation),
-    to(to),
-    begin(begin),
-    end(end),
-    position(position) { }
-
-    template <class InputIterator, class const_iterator>
-    bool Board::Move<InputIterator, const_iterator>::DoAction() {
-    switch (fromLocation) {
-    case FromLocation::TABLEAU:
-    if (end != from.End()) {
-    return false;
-    }
-    break;
-    case FromLocation::FOUNDATION:
-    if (next(begin) != end) {
-    return false;
-    }
-    break;
-    case FromLocation::TALON:
-    if (next(begin) != end) {
-    return false;
-    }
-    break;
-    default:
-    string n = static_cast<int>(toLocation);
-    throw logic_error("Move::DoAction: Unknown enum value (" + n + ")");
-    }
-    switch (toLocation) {
-    case ToLocation::TABLEAU:
-    if (!CanBuildDown(*prev(position), *begin)) {
-    return false;
-    }
-    break;
-    case ToLocation::FOUNDATION:
-    if (!CanBuildUp(*prev(position), *begin)) {
-    return false;
-    }
-    break;
-    default:
-    string n = static_cast<int>(toLocation);
-    throw logic_error("Move::DoAction: Unknown enum value (" + n + ")");
-    }
-    to.Insert(position, begin, end);
-    from.Erase(begin, end);
-    return true;
-    }
-
-    template <class InputIterator, class const_iterator>
-    vector<Board::Action> Board::GetValidActions() {
-    typedef Move<InputIterator, const_iterator> Move;
-    vector<Action> actions;
-
-    // possible moves to the foundation...
-
-    // reveal next talon
-    // TODO
-
-
-    // RETURN
-    return actions;
-    }
-  */
 
 }

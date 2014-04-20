@@ -195,7 +195,7 @@ namespace solitaire {
     /**
      * Flip over three more cards to the talon.
      */
-    void DoNewTalon();
+    bool DoNewTalon();
 
     /**
      * Get a hint.

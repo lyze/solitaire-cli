@@ -7,6 +7,20 @@
 #pragma once
 #include "board.h"
 
+int GetInt();
+
+int GetIntOption();
+
+template <typename OptionRangeType>
+OptionRangeType GetOption(OptionRangeType min, OptionRangeType max);
+
+std::string GetChoice(std::string a, std::string b);
+int GetChoice(int a, int b);
+
+bool GetBoolChoice(std::string trueString, std::string falseString);
+
+std::string GetString();
+
 namespace solitaire {
   const int kOneCardGame = 1;
   const int kThreeCardGame = 3;
@@ -28,8 +42,8 @@ namespace solitaire {
    */
   Play GetPlay();
 
-  void DoPlay(Board& game, Play playOption);
+  bool DoPlay(Board& game, Play playOption);
 
-  void DoMove(Board& game, Move moveOption);
+  bool DoMove(Board& game, Move moveOption);
 
 }
