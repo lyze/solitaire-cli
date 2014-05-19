@@ -22,8 +22,9 @@ int GetInt() {
     if (cin >> n) {
       break;
     } else {
+      cout << "Please enter an integer: ";
       cin.clear();
-      cin.ignore();
+      cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
   }
   return n;
